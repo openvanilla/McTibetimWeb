@@ -157,6 +157,9 @@ export default abstract class PhoneticLayout extends Layout {
       }
 
       const code = PhoneticLayout.VowelChars[vowelIndex];
+      if (code === 0) {
+        return true;
+      }
       codes.push(code);
       const buffer = String.fromCharCode(...codes);
       stateCallback(new CommittingState(buffer));
@@ -254,11 +257,13 @@ export default abstract class PhoneticLayout extends Layout {
         {
           let codes: number[] = state.utf16Code;
           let indexes = state.consonantIndexes;
-          let code = 0;
-          if (consonantIndex === 22) {
-            code = 0x0f71;
-          } else {
-            code = 0x50 + PhoneticLayout.ConsonantChars[consonantIndex];
+          let code = PhoneticLayout.ConsonantChars[consonantIndex];
+          if (indexes.length > 0) {
+            if (consonantIndex === 22) {
+              code = 0x0f71;
+            } else {
+              code = 0x50 + PhoneticLayout.ConsonantChars[consonantIndex];
+            }
           }
           codes.push(code);
           indexes.push(consonantIndex);

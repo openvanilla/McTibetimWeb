@@ -174,8 +174,8 @@
   const layouts = manager.layouts;
   let selectedLayout = window.localStorage.getItem('selectedLayout');
   console.log('Selected layout from localStorage:', selectedLayout);
-  if (selectedLayout !== null) {
-    controller.selectLayoutById(selectedLayout);
+  if (selectedLayout === undefined) {
+    selectedLayout = layouts[0].layoutId;
   }
 
   const select = document.getElementById('input-table-select');
@@ -190,7 +190,8 @@
     select.appendChild(option);
   }
 
-  select.value = manager.selectedIndexValue;
+  select.value = selectedLayout;
+
   select.addEventListener('change', (event) => {
     onChangeTable(event.target.value);
     document.getElementById('text_area').focus();
