@@ -1,3 +1,4 @@
+import DzongkhaLayout from './DzongkhaLayout';
 import Layout from './Layout';
 import SambhotaKeymapOneLayout from './SambhotaKeymapOneLayout';
 import SambhotaKeymapTwoLayout from './SambhotaKeymapTwoLayout';
@@ -21,6 +22,7 @@ export default class LayoutManager {
     new SambhotaKeymapTwoLayout(),
     new TccKeyboardOneLayout(),
     new TccKeyboardTwoLayout(),
+    new DzongkhaLayout(),
   ];
 
   getLayoutById(layoutId: string): Layout | undefined {

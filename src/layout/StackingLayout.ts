@@ -8,12 +8,12 @@ import {
 import Layout from './Layout';
 
 export default abstract class StackingLayout extends Layout {
-  abstract get composeKey(): string;
-  abstract get spaceKey(): string;
-  abstract get symbolKeyMapping(): string[];
-  abstract get consonantKeyMapping(): string[];
-  abstract get vowelKeyMapping(): string[];
-  abstract get finalAdditionalKeyMapping(): string[];
+  abstract readonly composeKey: string;
+  abstract readonly spaceKey: string;
+  abstract readonly symbolKeyMapping: string[];
+  abstract readonly consonantKeyMapping: string[];
+  abstract readonly vowelKeyMapping: string[];
+  abstract readonly finalAdditionalKeyMapping: string[];
 
   translateKey(key: string): string {
     return key;
