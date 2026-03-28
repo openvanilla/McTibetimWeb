@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>McTibetim - 小麥藏語輸入法網頁版本</title>
+    <title>McTibetim - Online Tibetan Input Method</title>
     <link rel="canonical" href="https://openvanilla.github.io/McTibetimWeb/" />
     <link rel="stylesheet" href="index.css">
     <meta name="description" content="McTibetim 小麥藏語輸入法">
@@ -34,17 +34,17 @@
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
             "name": "McTibetim",
-            "alternateName": "小麥藏語輸入法網頁版本",
+            "alternateName": "Online Tibetan Input Method",
             "applicationCategory": "UtilitiesApplication",
             "operatingSystem": "Web Browser",
             "url": "https://openvanilla.github.io/McTibetimWeb/",
             "image": "https://raw.githubusercontent.com/openvanilla/McTibetimWeb/refs/heads/main/images/banner.png",
-            "description": "McTibetim 是小麥藏語輸入法的網頁版本，提供多種鍵盤配置。",
+            "description": "McTibetim is the web version of a Tibetan input method, providing multiple keyboard layouts.",
             "author": {
                 "@type": "Organization",
                 "name": "OpenVanilla.org"
             },
-            "inLanguage": "zh-Hant-TW",
+            "inLanguage": "en",
             "isAccessibleForFree": true
         }
     </script>
@@ -52,12 +52,12 @@
 
 <body>
     <div class="main">
-        <p id="loading">正在載入小麥藏語輸入法，請稍候</p>
+        <p id="loading">Loading...</p>
 
         <div class="left">
-            <h1>McTibetim 小麥藏語輸入法</h1>
+            <h1>McTibetim</h1>
             <div id="edit_area">
-                <textarea placeholder="請在此直接使用英數鍵盤打字" id="text_area" rows="10" cols="50" title="輸入區"
+                <textarea placeholder="Type here" id="text_area" rows="10" cols="50" title="Input area"
                     autocapitalize="off"></textarea>
                 <div id="ime_warning"
                     style="display: none; background-color: #ffeb3b; color: #d84315; padding: 8px; margin-bottom: 8px; border-radius: 4px; font-weight: bold;">
@@ -72,9 +72,9 @@
         <div class="right">
             <!-- <p> <a href="https://openvanilla.github.io/McTibetimWeb/docs/" target="_blank">API Reference</a>
             </p> -->
-            <h2>鍵盤配置</h2>
-            <label for="input-table-select" class="visually-hidden">選擇鍵盤配置</label>
-            <select id="input-table-select" title="選擇鍵盤配置">
+            <h2>Keyboard Layout</h2>
+            <label for="input-table-select" class="visually-hidden">Keyboard Layout</label>
+            <select id="input-table-select" title="Keyboard Layout">
             </select>
             <h2>使用說明</h2>
             <!-- <ul>

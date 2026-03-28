@@ -354,6 +354,6 @@ export function KeyFromKeyboardEvent(
     ascii = 'Alt';
   }
 
-  const key = new Key(ascii, keyName, shiftKey, ctrlKey, isNumpadKey);
+  const key = new Key(ascii, keyName, shiftKey, ctrlKey, altKey, isNumpadKey);
   return key;
 }

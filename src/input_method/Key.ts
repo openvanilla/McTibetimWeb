@@ -40,6 +40,8 @@ export class Key {
   readonly shiftPressed: boolean = false;
   /** If the Control modifier is pressed. */
   readonly ctrlPressed: boolean = false;
+  /** If the Alt modifier is pressed. */
+  readonly altPressed: boolean = false;
   /** If the key is on the Numpad. */
   readonly isNumpadKey: boolean = false;
 
@@ -61,12 +63,14 @@ export class Key {
     n: KeyName = KeyName.UNKNOWN,
     shiftPressed: boolean = false,
     ctrlPressed: boolean = false,
+    altPressed: boolean = false,
     isNumpadKey: boolean = false,
   ) {
     this.ascii = c;
     this.name = n;
     this.shiftPressed = shiftPressed;
     this.ctrlPressed = ctrlPressed;
+    this.altPressed = altPressed;
     this.isNumpadKey = isNumpadKey;
   }
 
@@ -230,6 +234,6 @@ export function KeyFromKeyboardEvent(event: KeyboardEvent) {
       keyName = keyName;
       break;
   }
-  const key = new Key(event.key, keyName, event.shiftKey, event.ctrlKey, isNumpadKey);
+  const key = new Key(event.key, keyName, event.shiftKey, event.ctrlKey, event.altKey, isNumpadKey);
   return key;
 }

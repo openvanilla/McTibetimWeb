@@ -1,3 +1,4 @@
+import { Key } from '../input_method';
 import {
   CommittingState,
   EmptyState,
@@ -78,25 +79,101 @@ export default abstract class StackingLayout extends Layout {
     return [idx >= 0, idx];
   }
 
+  private keyNameUppered_: Map<string, string> | undefined;
+  private keyNameLowered_: Map<string, string> | undefined;
+
+  getKeyNames(shift: boolean, ctrl: boolean, alt: boolean): Map<string, string> {
+    if (ctrl) {
+      return new Map<string, string>();
+    }
+    if (alt) {
+      return new Map<string, string>();
+    }
+    if (shift) {
+      if (this.keyNameUppered_ === undefined) {
+        let keyNameUppered_ = new Map<string, string>();
+        keyNameUppered_.set(this.composeKey, '^');
+        keyNameUppered_.set(this.spaceKey, ' ');
+        keyNameUppered_.set(' ', '་');
+        this.consonantKeyMapping.forEach((key, index) => {
+          if (key === key.toLowerCase()) {
+            keyNameUppered_.set(key, String.fromCharCode(StackingLayout.ConsonantChars[index]));
+          }
+        });
+        this.vowelKeyMapping.forEach((key, index) => {
+          if (key === key.toLowerCase()) {
+            keyNameUppered_.set(key, String.fromCharCode(StackingLayout.VowelChars[index]));
+          }
+        });
+        this.finalAdditionalKeyMapping.forEach((key, index) => {
+          if (key === key.toLowerCase()) {
+            keyNameUppered_.set(key, String.fromCharCode(StackingLayout.FinalAddChars[index]));
+          }
+        });
+        this.symbolKeyMapping.forEach((key, index) => {
+          if (key === key.toLowerCase()) {
+            keyNameUppered_.set(key, String.fromCharCode(StackingLayout.SymbolChars[index]));
+          }
+        });
+        StackingLayout.Extras.forEach((value, key) => {
+          keyNameUppered_.set(key, value);
+        });
+        this.keyNameUppered_ = keyNameUppered_;
+      }
+      return this.keyNameUppered_;
+    }
+    if (this.keyNameLowered_ === undefined) {
+      let keyNameLowered_ = new Map<string, string>();
+      keyNameLowered_.set(this.composeKey, this.composeKey);
+      keyNameLowered_.set(this.spaceKey, this.spaceKey);
+      this.consonantKeyMapping.forEach((key, index) => {
+        if (key === key.toLowerCase()) {
+          keyNameLowered_.set(key, String.fromCharCode(StackingLayout.ConsonantChars[index]));
+        }
+      });
+      this.vowelKeyMapping.forEach((key, index) => {
+        if (key === key.toLowerCase()) {
+          keyNameLowered_.set(key, String.fromCharCode(StackingLayout.VowelChars[index]));
+        }
+      });
+      this.finalAdditionalKeyMapping.forEach((key, index) => {
+        if (key === key.toLowerCase()) {
+          keyNameLowered_.set(key, String.fromCharCode(StackingLayout.FinalAddChars[index]));
+        }
+      });
+      this.symbolKeyMapping.forEach((key, index) => {
+        if (key === key.toLowerCase()) {
+          keyNameLowered_.set(key, String.fromCharCode(StackingLayout.SymbolChars[index]));
+        }
+      });
+      StackingLayout.Extras.forEach((value, key) => {
+        keyNameLowered_.set(key, value);
+      });
+      this.keyNameLowered_ = keyNameLowered_;
+    }
+    return this.keyNameLowered_;
+  }
+
   handle(
-    key: string,
+    key: Key,
     state: InputState,
     stateCallback: (newState: InputState) => void,
     errorCallback: () => void,
   ): boolean {
+    let ascii = key.ascii;
     // Directly commit digits as Tibetan numbers.
-    if (key >= '0' && key <= '9') {
-      const code = +key + 0x0f20;
+    if (ascii >= '0' && ascii <= '9') {
+      const code = +ascii + 0x0f20;
       const chr = String.fromCharCode(code);
       stateCallback(new CommittingState(chr));
       return true;
     }
-    if (this.isSpaceKey(key)) {
+    if (this.isSpaceKey(ascii)) {
       stateCallback(new CommittingState(' '));
       return true;
     }
     // The compose key helps to enter or exit the stacking state.
-    if (this.isComposeKey(key)) {
+    if (this.isComposeKey(ascii)) {
       if (state instanceof InputtingState) {
         const buffer = state.composingBuffer;
         if (buffer.length > 0) {
@@ -115,7 +192,7 @@ export default abstract class StackingLayout extends Layout {
     }
 
     // Final M or N
-    const [isFinalAdditional, finalAdditionalIndex] = this.isFinalAdditional(key);
+    const [isFinalAdditional, finalAdditionalIndex] = this.isFinalAdditional(ascii);
     if (isFinalAdditional) {
       if (state instanceof StackingState) {
         const coder = StackingLayout.FinalAddChars[finalAdditionalIndex];
@@ -127,7 +204,7 @@ export default abstract class StackingLayout extends Layout {
     }
 
     // Symbols
-    const [isSymbol, symbolIndex] = this.isSymbol(key);
+    const [isSymbol, symbolIndex] = this.isSymbol(ascii);
     if (isSymbol) {
       let codes: number[] = [];
       if (state instanceof StackingState) {
@@ -141,7 +218,7 @@ export default abstract class StackingLayout extends Layout {
     }
 
     // Vowels
-    var [isVowel, vowelIndex] = this.isVowel(key);
+    var [isVowel, vowelIndex] = this.isVowel(ascii);
     if (isVowel) {
       const code = StackingLayout.VowelChars[vowelIndex];
       if (code === 0) {
@@ -162,9 +239,9 @@ export default abstract class StackingLayout extends Layout {
       return true;
     }
 
-    key = this.translateKey(key);
+    ascii = this.translateKey(ascii);
 
-    let [isConsonant, consonantIndex] = this.isConsonant(key);
+    let [isConsonant, consonantIndex] = this.isConsonant(ascii);
     if (isConsonant) {
       if (state instanceof StackingState) {
         if (state.consonantIndexes.length >= StackingLayout.MaxStackingConsonants) {
@@ -273,7 +350,7 @@ export default abstract class StackingLayout extends Layout {
         return true;
       }
     }
-    const extra = StackingLayout.Extras.get(key);
+    const extra = StackingLayout.Extras.get(ascii);
     if (extra) {
       stateCallback(new CommittingState(extra));
       return true;

@@ -18,11 +18,11 @@ export default class LayoutManager {
   }
 
   readonly layouts: Layout[] = [
+    new DzongkhaLayout(),
     new SambhotaKeymapOneLayout(),
     new SambhotaKeymapTwoLayout(),
     new TccKeyboardOneLayout(),
     new TccKeyboardTwoLayout(),
-    new DzongkhaLayout(),
   ];
 
   getLayoutById(layoutId: string): Layout | undefined {

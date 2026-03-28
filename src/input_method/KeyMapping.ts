@@ -111,7 +111,14 @@ export class KeyMapping {
       default:
         break;
     }
-    const key = new Key(event.key, keyName, event.shiftKey, event.ctrlKey, isNumpadKey);
+    const key = new Key(
+      event.key,
+      keyName,
+      event.shiftKey,
+      event.ctrlKey,
+      event.altKey,
+      isNumpadKey,
+    );
     return key;
   }
 }

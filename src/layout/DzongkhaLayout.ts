@@ -1,22 +1,53 @@
 import { CommittingState, InputState } from '../input_method/InputState';
 import Layout from './Layout';
+import { Key } from '../input_method';
 
 export default class DzongkhaLayout implements Layout {
+  readonly layoutId = 'dzongkha';
+  readonly layoutName = 'Dzongkha';
+
   handle(
-    key: string,
+    key: Key,
     state: InputState,
     stateCallback: (newState: InputState) => void,
     errorCallback: () => void,
   ): boolean {
-    const code = this.keymap.get(key);
+    const code = this.keymap.get(key.ascii);
     if (code) {
       stateCallback(new CommittingState(code));
       return true;
     }
     return false;
   }
-  readonly layoutId = 'dzongkha';
-  readonly layoutName = 'Dzongkha';
+
+  private keyNameUppered_: Map<string, string> | undefined;
+  private keyNameLowered_: Map<string, string> | undefined;
+
+  getKeyNames(shift: boolean, ctrl: boolean, alt: boolean): Map<string, string> {
+    if (ctrl) {
+      return new Map<string, string>();
+    }
+    if (shift) {
+      if (this.keyNameUppered_ === undefined) {
+        this.keyNameUppered_ = new Map<string, string>();
+        this.keymap.forEach((value, key) => {
+          if (key === key.toUpperCase()) {
+            this.keyNameUppered_!.set(key, value);
+          }
+        });
+      }
+      return this.keyNameUppered_;
+    }
+    if (this.keyNameLowered_ === undefined) {
+      this.keyNameLowered_ = new Map<string, string>();
+      this.keymap.forEach((value, key) => {
+        if (key === key.toLowerCase()) {
+          this.keyNameLowered_!.set(key, value);
+        }
+      });
+    }
+    return this.keyNameLowered_;
+  }
 
   readonly keymap = new Map<string, string>([
     ['_', 'ཿ'],
