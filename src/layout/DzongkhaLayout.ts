@@ -1,6 +1,7 @@
 import { CommittingState, InputState } from '../input_method/InputState';
 import Layout from './Layout';
 import { Key } from '../input_method';
+import { KeyName } from '../input_method/Key';
 
 export default class DzongkhaLayout implements Layout {
   readonly layoutId = 'dzongkha';
@@ -12,6 +13,12 @@ export default class DzongkhaLayout implements Layout {
     stateCallback: (newState: InputState) => void,
     errorCallback: () => void,
   ): boolean {
+    if (key.name === KeyName.SPACE) {
+      const buffer = String.fromCharCode(0x0f0b);
+      stateCallback(new CommittingState(buffer));
+      return true;
+    }
+
     const code = this.keymap.get(key.ascii);
     if (code) {
       stateCallback(new CommittingState(code));
@@ -91,57 +98,57 @@ export default class DzongkhaLayout implements Layout {
     ['7', '༧'],
     ['8', '༨'],
     ['9', '༩'],
-    ['A', ' ྟ'],
+    ['A', 'ྟ'],
     ['a', 'ཏ'],
-    ['B', ' ྲ'],
+    ['B', 'ྲ'],
     ['b', 'ར'],
-    ['C', ' ཱ'],
+    ['C', 'ཱ'],
     ['c', 'འ'],
-    ['D', ' ྡ'],
+    ['D', 'ྡ'],
     ['d', 'ད'],
-    ['E', ' ྒ'],
+    ['E', 'ྒ'],
     ['e', 'ག'],
-    ['F', ' ྣ'],
+    ['F', 'ྣ'],
     ['f', 'ན'],
-    ['G', ' ྤ'],
+    ['G', 'ྤ'],
     ['g', 'པ'],
-    ['H', ' ྥ'],
+    ['H', 'ྥ'],
     ['h', 'ཕ'],
-    ['I', ' ཽ'],
+    ['I', 'ཽ'],
     ['i', 'ོ'],
-    ['J', ' ྦ'],
+    ['J', 'ྦ'],
     ['j', 'བ'],
-    ['K', ' ྨ'],
+    ['K', 'ྨ'],
     ['k', 'མ'],
-    ['L', ' ྩ'],
+    ['L', 'ྩ'],
     ['l', 'ཙ'],
-    ['M', ' ྴ'],
+    ['M', 'ྴ'],
     ['m', 'ཤ'],
-    ['N', ' ླ'],
+    ['N', 'ླ'],
     ['n', 'ལ'],
-    ['O', ' ྕ'],
+    ['O', 'ྕ'],
     ['o', 'ཅ'],
-    ['P', ' ྖ'],
+    ['P', 'ྖ'],
     ['p', 'ཆ'],
-    ['Q', ' ྐ'],
+    ['Q', 'ྐ'],
     ['q', 'ཀ'],
-    ['R', ' ྔ'],
+    ['R', 'ྔ'],
     ['r', 'ང'],
-    ['S', ' ྠ'],
+    ['S', 'ྠ'],
     ['s', 'ཐ'],
-    ['T', ' ྀ'],
+    ['T', 'ྀ'],
     ['t', 'ི'],
-    ['U', ' ཻ'],
+    ['U', 'ཻ'],
     ['u', 'ེ'],
-    ['V', ' ྱ'],
+    ['V', 'ྱ'],
     ['v', 'ཡ'],
-    ['W', ' ྑ'],
+    ['W', 'ྑ'],
     ['w', 'ཁ'],
-    ['X', ' ྯ'],
+    ['X', 'ྯ'],
     ['x', 'ཟ'],
-    ['Y', ' ྄'],
+    ['Y', '྄'],
     ['y', 'ུ'],
-    ['Z', ' ྮ'],
+    ['Z', 'ྮ'],
     ['z', 'ཞ'],
     ["'", 'ཛ'],
   ]);

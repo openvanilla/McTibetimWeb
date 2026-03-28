@@ -41,6 +41,7 @@ export default class InputController {
 
   selectLayoutById(id: string): void {
     this.keyHandler_.selectLayoutById(id);
+    this.reset();
   }
 
   /**

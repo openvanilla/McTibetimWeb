@@ -177,6 +177,8 @@
   if (selectedLayout === undefined) {
     selectedLayout = layouts[0].layoutId;
   }
+  controller.selectLayoutById(selectedLayout);
+  console.log('Selected layout', selectedLayout);
 
   const select = document.getElementById('input-table-select');
   select.innerHTML = '';
