@@ -93,7 +93,7 @@ export default abstract class StackingLayout extends Layout {
     if (shift) {
       if (this.keyNameUppered_ === undefined) {
         let keyNameUppered_ = new Map<string, string>();
-        keyNameUppered_.set(this.composeKey, '^');
+        keyNameUppered_.set(this.composeKey, '⬇️');
         keyNameUppered_.set(this.spaceKey, ' ');
         keyNameUppered_.set(' ', '་');
         this.consonantKeyMapping.forEach((key, index) => {
@@ -119,14 +119,20 @@ export default abstract class StackingLayout extends Layout {
         StackingLayout.Extras.forEach((value, key) => {
           keyNameUppered_.set(key, value);
         });
+        keyNameUppered_.set(' ', '་་');
         this.keyNameUppered_ = keyNameUppered_;
       }
       return this.keyNameUppered_;
     }
     if (this.keyNameLowered_ === undefined) {
       let keyNameLowered_ = new Map<string, string>();
-      keyNameLowered_.set(this.composeKey, this.composeKey);
-      keyNameLowered_.set(this.spaceKey, this.spaceKey);
+      for (let i = 0; i <= 9; i++) {
+        const ascii = i.toString();
+        const code = i + 0x0f20;
+        keyNameLowered_.set(ascii, String.fromCharCode(code));
+      }
+      keyNameLowered_.set(this.composeKey, '⬇️');
+      keyNameLowered_.set(this.spaceKey, ' ');
       this.consonantKeyMapping.forEach((key, index) => {
         if (key === key.toLowerCase()) {
           keyNameLowered_.set(key, String.fromCharCode(StackingLayout.ConsonantChars[index]));
@@ -150,6 +156,7 @@ export default abstract class StackingLayout extends Layout {
       StackingLayout.Extras.forEach((value, key) => {
         keyNameLowered_.set(key, value);
       });
+      keyNameLowered_.set(' ', '་་');
       this.keyNameLowered_ = keyNameLowered_;
     }
     return this.keyNameLowered_;

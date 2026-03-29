@@ -65,7 +65,8 @@ export class Key {
     shiftPressed: boolean = false,
     ctrlPressed: boolean = false,
     isNumpadKey: boolean = false,
-      altPressed: boolean = false,
+    altPressed: boolean = false,
+    rightAltPressed: boolean = false,
     code: string = '',
   ) {
     this.ascii = c;
@@ -73,7 +74,7 @@ export class Key {
     this.shiftPressed = shiftPressed;
     this.ctrlPressed = ctrlPressed;
     this.isNumpadKey = isNumpadKey;
-      this.altPressed = altPressed;
+    this.altPressed = altPressed;
     this.code = code;
   }
 
@@ -126,7 +127,12 @@ export class Key {
    * @returns A string representation of the key.
    */
   toString(): string {
-    return `Key{ascii: ${this.ascii}, name: ${this.name}, shift: ${this.shiftPressed}, ctrl: ${this.ctrlPressed}}`;
+    let result = `Key{ascii: ${this.ascii}, name: ${this.name}, shift: ${this.shiftPressed}, ctrl: ${this.ctrlPressed}`;
+    if (this.altPressed) {
+      result += `, alt: ${this.altPressed}}`;
+    }
+    result += '}';
+    return result;
   }
 }
 
@@ -244,6 +250,7 @@ export function KeyFromKeyboardEvent(event: KeyboardEvent) {
     event.ctrlKey,
     isNumpadKey,
     event.altKey,
+    event.altKey && event.location === KeyboardEvent.DOM_KEY_LOCATION_RIGHT,
     event.code,
   );
   return key;

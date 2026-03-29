@@ -350,10 +350,12 @@ export function KeyFromKeyboardEvent(
   }
   const ctrlKey = (keyStates[VK_Keys.VK_CONTROL] & (1 << 7)) !== 0;
   const altKey = (keyStates[VK_Keys.VK_MENU] & (1 << 7)) !== 0;
+  const rightAltKey = altKey && (keyStates[VK_Keys.VK_MENU] & (1 << 6)) !== 0;
   if (charCode === 0 && keyName === KeyName.ASCII && altKey) {
     ascii = 'Alt';
   }
+  // TODO: map keyCode to Web standard.
 
-  const key = new Key(ascii, keyName, shiftKey, ctrlKey, isNumpadKey, altKey);
+  const key = new Key(ascii, keyName, shiftKey, ctrlKey, isNumpadKey, altKey, rightAltKey);
   return key;
 }

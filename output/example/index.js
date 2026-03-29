@@ -173,12 +173,11 @@
   const manager = LayoutManager.getInstance();
   const layouts = manager.layouts;
   let selectedLayout = window.localStorage.getItem('selectedLayout');
-  console.log('Selected layout from localStorage:', selectedLayout);
+
   if (selectedLayout === undefined) {
     selectedLayout = layouts[0].layoutId;
   }
   controller.selectLayoutById(selectedLayout);
-  console.log('Selected layout', selectedLayout);
 
   const select = document.getElementById('input-table-select');
   select.innerHTML = '';
@@ -219,13 +218,12 @@
   });
 
   textarea.addEventListener('keydown', (event) => {
-    // console.log(event);
+    console.log(event);
 
     if (isComposing || event.isComposing || event.keyCode === 229) {
       return;
     }
-
-    if (event.metaKey || event.altKey || event.ctrlKey) {
+    if (event.metaKey) {
       controller.reset();
       return;
     }
@@ -318,7 +316,6 @@
 
     function buildKeyboardDisplay() {
       const names = controller.getCurrentKeyNames(api.isShift || api.isLock, api.isCtrl, false);
-      console.log('Key names for current layout:', names);
       const display = {
         '{tab}': '⇥',
         '{lock}': 'Lock',
@@ -329,7 +326,6 @@
         '{ctrl}': '⌃',
       };
       for (const [key, value] of names.entries()) {
-        console.log(key);
         if (display[key] === undefined) {
           display[key] = value;
         }

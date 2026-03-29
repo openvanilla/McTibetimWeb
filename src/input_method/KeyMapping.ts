@@ -118,6 +118,7 @@ export class KeyMapping {
       event.ctrlKey,
       isNumpadKey,
       event.altKey,
+      event.altKey && event.location === KeyboardEvent.DOM_KEY_LOCATION_RIGHT,
       event.code,
     );
     return key;

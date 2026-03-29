@@ -13,10 +13,34 @@ export default class DzongkhaLayout implements Layout {
     stateCallback: (newState: InputState) => void,
     errorCallback: () => void,
   ): boolean {
+    if (key.ctrlPressed) {
+      return false;
+    }
+
     if (key.name === KeyName.SPACE) {
       const buffer = String.fromCharCode(0x0f0b);
       stateCallback(new CommittingState(buffer));
       return true;
+    }
+
+    if (key.altPressed) {
+      const keyCode = key.code;
+      let ascii: string | undefined = undefined;
+      if (key.shiftPressed) {
+        ascii = this.upperKeyCodeAsciiMapping.get(keyCode);
+      } else {
+        ascii = this.lowerKeyCodeAsciiMapping.get(keyCode);
+      }
+      // console.log('Alt pressed. Key code:', keyCode, 'Mapped ASCII:', ascii); // Debug log for Alt key handling
+      if (ascii) {
+        let code = this.altKeyMap.get(ascii);
+        if (!code) {
+          errorCallback();
+          return true;
+        }
+        stateCallback(new CommittingState(code));
+        return true;
+      }
     }
 
     const code = this.keymap.get(key.ascii);
@@ -27,6 +51,9 @@ export default class DzongkhaLayout implements Layout {
     return false;
   }
 
+  private keyNameAltUppered_: Map<string, string> | undefined;
+  private keyNameLAltowered_: Map<string, string> | undefined;
+
   private keyNameUppered_: Map<string, string> | undefined;
   private keyNameLowered_: Map<string, string> | undefined;
 
@@ -34,6 +61,29 @@ export default class DzongkhaLayout implements Layout {
     if (ctrl) {
       return new Map<string, string>();
     }
+    if (alt) {
+      if (shift) {
+        if (this.keyNameAltUppered_ === undefined) {
+          this.keyNameAltUppered_ = new Map<string, string>();
+          this.altKeyMap.forEach((value, key) => {
+            if (key === key.toUpperCase()) {
+              this.keyNameAltUppered_!.set(key, value);
+            }
+          });
+        }
+        return this.keyNameAltUppered_;
+      }
+      if (this.keyNameLAltowered_ === undefined) {
+        this.keyNameLAltowered_ = new Map<string, string>();
+        this.altKeyMap.forEach((value, key) => {
+          if (key === key.toLowerCase()) {
+            this.keyNameLAltowered_!.set(key, value);
+          }
+        });
+      }
+      return this.keyNameLAltowered_;
+    }
+
     if (shift) {
       if (this.keyNameUppered_ === undefined) {
         this.keyNameUppered_ = new Map<string, string>();
@@ -55,6 +105,202 @@ export default class DzongkhaLayout implements Layout {
     }
     return this.keyNameLowered_;
   }
+
+  readonly upperKeyCodeAsciiMapping = new Map<string, string>([
+    ['Backquote', '~'],
+    ['Digit1', '!'],
+    ['Digit2', '@'],
+    ['Digit3', '#'],
+    ['Digit4', '$'],
+    ['Digit5', '%'],
+    ['Digit6', '^'],
+    ['Digit7', '&'],
+    ['Digit8', '*'],
+    ['Digit9', '('],
+    ['Digit0', ')'],
+    ['Minus', '_'],
+    ['Equal', '+'],
+    ['KeyQ', 'Q'],
+    ['KeyW', 'W'],
+    ['KeyE', 'E'],
+    ['KeyR', 'R'],
+    ['KeyT', 'T'],
+    ['KeyY', 'Y'],
+    ['KeyU', 'U'],
+    ['KeyI', 'I'],
+    ['KeyO', 'O'],
+    ['KeyP', 'P'],
+    ['BracketLeft', '{'],
+    ['BracketRight', '}'],
+    ['Backslash', '|'],
+    ['KeyA', 'A'],
+    ['KeyS', 'S'],
+    ['KeyD', 'D'],
+    ['KeyF', 'F'],
+    ['KeyG', 'G'],
+    ['KeyH', 'H'],
+    ['KeyJ', 'J'],
+    ['KeyK', 'K'],
+    ['KeyL', 'L'],
+    ['Semicolon', ':'],
+    ['Quote', '"'],
+    ['KeyZ', 'Z'],
+    ['KeyX', 'X'],
+    ['KeyC', 'C'],
+    ['KeyV', 'V'],
+    ['KeyB', 'B'],
+    ['KeyN', 'N'],
+    ['KeyM', 'M'],
+    ['Comma', '<'],
+    ['Period', '>'],
+    ['Slash', '?'],
+  ]);
+
+  readonly lowerKeyCodeAsciiMapping = new Map<string, string>([
+    ['Backquote', '`'],
+    ['Digit1', '1'],
+    ['Digit2', '2'],
+    ['Digit3', '3'],
+    ['Digit4', '4'],
+    ['Digit5', '5'],
+    ['Digit6', '6'],
+    ['Digit7', '7'],
+    ['Digit8', '8'],
+    ['Digit9', '9'],
+    ['Digit0', '0'],
+    ['Minus', '-'],
+    ['Equal', '='],
+    ['KeyQ', 'q'],
+    ['KeyW', 'w'],
+    ['KeyE', 'e'],
+    ['KeyR', 'r'],
+    ['KeyT', 't'],
+    ['KeyY', 'y'],
+    ['KeyU', 'u'],
+    ['KeyI', 'i'],
+    ['KeyO', 'o'],
+    ['KeyP', 'p'],
+    ['BracketLeft', '['],
+    ['BracketRight', ']'],
+    ['Backslash', '\\'],
+    ['KeyA', 'a'],
+    ['KeyS', 's'],
+    ['KeyD', 'd'],
+    ['KeyF', 'f'],
+    ['KeyG', 'g'],
+    ['KeyH', 'h'],
+    ['KeyJ', 'j'],
+    ['KeyK', 'k'],
+    ['KeyL', 'l'],
+    ['Semicolon', ';'],
+    ['Quote', '"'],
+    ['KeyZ', 'z'],
+    ['KeyX', 'x'],
+    ['KeyC', 'c'],
+    ['KeyV', 'v'],
+    ['KeyB', 'b'],
+    ['KeyN', 'n'],
+    ['KeyM', 'm'],
+    ['Comma', ','],
+    ['Period', '.'],
+    ['Slash', '/'],
+  ]);
+
+  readonly altKeyMap = new Map<string, string>([
+    ['`', '࿑'],
+    ['1', '1'],
+    ['2', '2'],
+    ['3', '3'],
+    ['4', '4'],
+    ['5', '5'],
+    ['6', '6'],
+    ['7', '7'],
+    ['8', '8'],
+    ['9', '9'],
+    ['0', '0'],
+    ['-', '-'],
+    ['=', '='],
+    ['q', 'ྈ'],
+    ['w', 'ྉ'],
+    ['e', 'ྌ'],
+    ['r', 'ྃ'],
+    ['t', '༚'],
+    ['y', '༛'],
+    ['u', '༜'],
+    ['i', '༝'],
+    ['o', '༞'],
+    ['p', '༟'],
+    ['[', '('],
+    [']', ')'],
+    ['\\', '\\'],
+    ['a', 'ཊ'],
+    ['s', 'ཋ'],
+    ['d', 'ཌ'],
+    ['f', 'ཎ'],
+    ['g', ''],
+    ['h', ''],
+    ['j', '༷'],
+    ['k', 'ཾ'],
+    ['l', '༹'],
+    [';', ';'],
+    ["'", "'"],
+    ['z', '༓'],
+    ['x', '྾'],
+    ['c', '༃'],
+    ['v', '༏'],
+    ['b', 'ཪ'],
+    ['n', '༒'],
+    ['m', 'ཥ'],
+    [',', ','],
+    ['.', '.'],
+    ['/', '/'],
+    ['~', '࿐'],
+    ['!', '࿓'],
+    ['@', '࿔'],
+    ['#', '༺'],
+    ['$', '༻'],
+    ['%', '྅'],
+    ['^', '༁'],
+    ['&', 'ྊ'],
+    ['*', '*'],
+    ['(', ''],
+    [')', ''],
+    ['_', '࿒ཏ'],
+    ['+', '+'],
+    ['Q', 'ྍ'],
+    ['W', 'ྎ'],
+    ['E', 'ྏ'],
+    ['R', 'ྂ'],
+    ['T', 'ྋྙ'],
+    ['Y', ''],
+    ['U', ''],
+    ['I', '༗'],
+    ['O', '༘'],
+    ['P', '༙'],
+    ['{', '༿'],
+    ['}', '༾'],
+    ['A', 'ྚ'],
+    ['S', 'ྛ'],
+    ['D', 'ྜ'],
+    ['F', 'ྞ'],
+    ['G', ''],
+    ['H', ''],
+    ['J', '༷༵'],
+    ['K', '྇'],
+    ['L', '྆'],
+    [':', ':'],
+    ['"', '"'],
+    ['Z', '༶'],
+    ['X', '྿'],
+    ['C', 'ྰ'],
+    ['V', 'ྻ'],
+    ['B', 'ྼ'],
+    ['N', ''],
+    ['M', 'ྵ'],
+    ['<', '࿙'],
+    ['>', '࿚'],
+    ['?', '࿛'],
+  ]);
 
   readonly keymap = new Map<string, string>([
     ['_', 'ཿ'],
