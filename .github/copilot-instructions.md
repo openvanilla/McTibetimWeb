@@ -1,44 +1,42 @@
 # GitHub Copilot Instructions for McTibetimWeb
 
-This document records the current repository layout, tooling, and workflow so coding agents can work from the code that is actually in this workspace.
+This document describes the repository as it exists in this workspace today. Use it as the source of truth instead of older notes that referenced candidate-table or engine-based implementations.
 
 ## Project Overview
 
-McTibetimWeb (小麥族語輸入法) is a TypeScript-based input method for Taiwan Indigenous Languages. The repository currently supports:
+McTibetimWeb (小麥藏文輸入法) is a TypeScript Tibetan input method that currently targets:
 
 - Web browsers
 - Chrome OS through a Chrome extension bundle
 - Windows through PIME
 
-The core behavior is prefix-based candidate lookup over prebuilt vocabulary tables.
+The project is now layout-driven. Input behavior lives in `src/layout/`, while the shared controller, state model, key translation, and UI serialization live in `src/input_method/`.
 
 ## Current Technology Stack
 
-- **Language**: TypeScript 5
-- **Package Manager**: npm with `package-lock.json`
-- **Build Tooling**: Webpack 5 with `ts-loader`
-- **Testing**: Jest 30 with `ts-jest` and `jsdom`
-- **Linting**: ESLint 10 with flat config in `eslint.config.cjs`
-- **Formatting**: Prettier
-- **Compiler Settings**: `strict: true`, `module: commonjs`, `target: es6`
+- Language: TypeScript 5
+- Package manager: npm with `package-lock.json`
+- Build tooling: Webpack 5 with `ts-loader`
+- Testing: Jest 30 with `ts-jest` and `jsdom`
+- Linting: ESLint 10 with flat config in `eslint.config.cjs`
+- Coverage: Jest runs with `collectCoverage: true`
+- External dependency: `tibetan-ewts-converter` for Wylie conversion
+- Compiler settings: `strict: true`, `module: commonjs`, `target: es6`
 
 ## Repository Structure
 
 ```text
 McTibetimWeb/
 ├── .github/
+│   ├── workflows/
 │   └── copilot-instructions.md
 ├── src/
 │   ├── index.ts
 │   ├── chromeos_ime.ts
 │   ├── pime.ts
 │   ├── pime_keys.ts
-│   ├── engine/
-│   │   ├── Candidate.ts
-│   │   ├── Completer.ts
-│   │   ├── Completer.test.ts
-│   │   └── index.ts
 │   ├── input_method/
+│   │   ├── Candidate.ts
 │   │   ├── InputController.ts
 │   │   ├── InputState.ts
 │   │   ├── InputUI.ts
@@ -48,16 +46,29 @@ McTibetimWeb/
 │   │   ├── KeyMapping.ts
 │   │   ├── *.test.ts
 │   │   └── index.ts
-│   └── data/
-│       ├── TW_00.ts ... TW_42.ts
-│       ├── index.ts
-│       └── index.test.ts
+│   ├── layout/
+│   │   ├── Layout.ts
+│   │   ├── LayoutManager.ts
+│   │   ├── DzongkhaLayout.ts
+│   │   ├── SambhotaKeymapOneLayout.ts
+│   │   ├── SambhotaKeymapTwoLayout.ts
+│   │   ├── TccKeyboardOneLayout.ts
+│   │   ├── TccKeyboardTwoLayout.ts
+│   │   ├── WyleLayout.ts
+│   │   ├── StackingLayout.ts
+│   │   ├── *.test.ts
+│   │   └── index.ts
+│   └── test_support/
+│       └── EwtsConverterMock.ts
 ├── tools/
 │   ├── convert.py
 │   ├── README.md
 │   ├── requirements.txt
 │   └── run.sh
 ├── output/
+│   ├── chromeos/
+│   ├── example/
+│   └── pime/
 ├── resource/
 ├── eslint.config.cjs
 ├── jest.config.js
@@ -65,55 +76,88 @@ McTibetimWeb/
 ├── webpack.config.js
 ├── webpack.config.chromeext.js
 ├── webpack.config.pime.js
-└── build_pime.bat
+├── build_pime.bat
+├── README.md
+└── README.STATES.md
 ```
 
 ## Important Current Facts
 
-### Data Tables
+### Active Layouts
 
-- `src/data/` contains **42** vocabulary modules.
-- The current set is `TW_00` through `TW_42`, with **`TW_11` missing**.
-- `TW_12` exists and is enabled.
-- `src/data/index.ts` is the authoritative registry of enabled tables.
+`src/layout/LayoutManager.ts` currently registers six layouts:
+
+- `dzongkha`
+- `sambhota_keymap_1`
+- `sambhota_keymap_2`
+- `tcc_keyboard_1`
+- `tcc_keyboard_2`
+- `wylie`
+
+Note the implementation file is named `WyleLayout.ts`, but its public layout id and name are `wylie` / `Wylie`.
+
+### State Model
+
+The authoritative state model is in `src/input_method/InputState.ts`.
+
+Concrete states:
+
+- `EmptyState`
+- `CommittingState`
+- `WylieInputtingState`
+- `StackingState`
+
+`InputtingState` is an abstract base class for the two composition modes. There is no longer a generic candidate-engine state machine under `src/engine/`.
+
+### Architecture Shape
+
+- Direct-commit layouts such as `DzongkhaLayout` emit Tibetan characters immediately.
+- `StackingLayout` and its subclasses build Tibetan syllables incrementally in `StackingState`.
+- `WyleLayout` edits ASCII Wylie text and uses `tibetan-ewts-converter` to generate a Tibetan preview tooltip.
+- `KeyHandler` delegates all semantics to the selected layout.
+- `InputController` owns state transitions, UI updates, and commit/reset behavior.
+- `InputUIElements.ts` serializes `InputtingState` into the compact JSON payload expected by the UI layer.
 
 ### Validation Status
 
-As verified in this workspace on **March 18, 2026**:
+Verified in this workspace on **March 31, 2026**:
 
 - `npm run ts-build` passes
-- `npm run test -- --runInBand` passes: **7 suites, 172 tests**
+- `npm run test -- --runInBand` passes: **11 suites, 216 tests**
 - `npm run eslint` passes
 
-Treat those commands as part of the normal green-path validation flow unless the workspace changes.
+Jest is configured with `collectCoverage: true`, so test runs also attempt to write coverage artifacts under `coverage/`.
 
 ### Build Outputs
 
 - `npm run build` writes `output/example/bundle.js`
 - `npm run build:chromeos` writes `output/chromeos/bundle.js`
 - `npm run build:pime` writes `output/pime/index.js`
-- `npm run ts-build` writes JavaScript and declaration output to `dist/`
+- `npm run ts-build` writes library output to `dist/`
 
 ## Core Concepts
 
 ### Input Method Flow
 
-1. Users type Latin letters.
-2. `Completer` performs prefix search on the selected input table.
-3. `KeyHandler` turns key events into `InputState` transitions.
-4. `InputController` applies those transitions, updates the UI, and commits text when needed.
-5. Candidate navigation uses Tab, arrow keys, and paging behavior.
+1. Platform code translates host key events into internal `Key` objects.
+2. `InputController` forwards the key to `KeyHandler`.
+3. `KeyHandler` delegates behavior to the currently selected `Layout`.
+4. Layout code emits a new `InputState`.
+5. `InputController` either updates UI state or commits text and resets back to `EmptyState`.
 
 ### Main Code Areas
 
-- `src/engine/Completer.ts`: prefix search over sorted vocabulary rows
-- `src/input_method/KeyHandler.ts`: keyboard semantics and state transitions
-- `src/input_method/InputController.ts`: orchestration between key handling, UI updates, and commits
-- `src/input_method/InputState.ts`: state model for idle, inputting, and committing
-- `src/input_method/InputUIElements.ts`: conversion from state to UI payloads
-- `src/data/index.ts`: input table registry and selection
-- `src/pime.ts`: PIME integration and request handling
-- `src/pime_keys.ts`: Windows virtual key conversion
+- `src/input_method/InputController.ts`: state transition orchestration and UI/commit handling
+- `src/input_method/KeyHandler.ts`: layout selection and event dispatch
+- `src/input_method/InputState.ts`: state definitions for empty, composing, and commit transitions
+- `src/input_method/InputUIElements.ts`: JSON serialization for composing UI state
+- `src/input_method/KeyMapping.ts`: DOM keyboard event to internal key translation
+- `src/layout/Layout.ts`: layout contract
+- `src/layout/StackingLayout.ts`: shared stacking-IME behavior for multiple Tibetan layouts
+- `src/layout/WyleLayout.ts`: Wylie composition, cursor editing, and EWTS conversion
+- `src/chromeos_ime.ts`: Chrome OS integration entry point
+- `src/pime.ts`: PIME integration entry point
+- `src/pime_keys.ts`: Windows virtual key translation for PIME
 
 ## Development Workflow
 
@@ -126,11 +170,13 @@ npm install
 ### Common Commands
 
 ```bash
-# Build outputs
+# TypeScript library build
+npm run ts-build
+
+# Webpack builds
 npm run build
 npm run build:chromeos
 npm run build:pime
-npm run ts-build
 
 # Watch mode
 npm run build:watch
@@ -143,16 +189,27 @@ npm run test:coverage
 npm run eslint
 ```
 
-### PIME Deployment
+## Platform Notes
 
-For local Windows deployment, `build_pime.bat` currently:
+### Web
 
-1. Runs `npm run build:pime`
-2. Deletes `C:\Program Files (x86)\PIME\node\input_methods\mctibetim`
-3. Copies `output\pime` into that directory
-4. Reminds the user to restart PIME Launcher
+- Entry: `src/index.ts`
+- Webpack config: `webpack.config.js`
+- Output folder: `output/example/`
 
-The script is functional, but its header comments are placeholder boilerplate and should not be treated as authoritative documentation.
+### Chrome OS
+
+- Entry: `src/chromeos_ime.ts`
+- Webpack config: `webpack.config.chromeext.js`
+- Output folder: `output/chromeos/`
+
+### Windows / PIME
+
+- Entry: `src/pime.ts`
+- Webpack config: `webpack.config.pime.js`
+- Output folder: `output/pime/`
+- IME metadata lives in `output/pime/ime.json`
+- `build_pime.bat` builds the PIME bundle and copies it to `C:\Program Files (x86)\PIME\node\input_methods\mctibetim`
 
 ## Coding Guidance for Agents
 
@@ -160,67 +217,69 @@ The script is functional, but its header comments are placeholder boilerplate an
 
 - Preserve `strict` mode assumptions.
 - Prefer explicit types over `any`.
-- Keep source compatible with the current `commonjs` / `es6` TypeScript output settings.
-- `tsconfig.json` excludes tests and platform-specific entry points from `ts-build`; do not assume every `src/` file is part of the library compiler output.
+- Keep source compatible with the current `commonjs` / `es6` compiler settings.
+- `tsconfig.json` excludes platform entry points and tests from the library build; do not assume every file under `src/` is emitted by `npm run ts-build`.
 
 ### Tests
 
 - Place tests next to implementation files using the `.test.ts` suffix.
-- Current test coverage exists in `src/engine`, `src/input_method`, and `src/data`.
-- Use `jsdom`-friendly patterns for DOM-related behavior.
-- When changing keyboard semantics or state transitions, update the adjacent tests.
+- Current test coverage exists in both `src/input_method/` and `src/layout/`.
+- DOM-facing behavior uses `jsdom`.
+- `jest.config.js` maps `tibetan-ewts-converter/EwtsConverter` to `src/test_support/EwtsConverterMock.ts`.
+- When changing layout semantics, state transitions, or key translation, update adjacent tests.
 
 ### Linting
 
 - The repository uses `eslint.config.cjs`, not `.eslintrc.*`.
-- The configured rule set is intentionally light.
-- Do not assume import ordering or stylistic rules that are not explicitly configured.
+- The `eslint` script targets `src` only.
+- Do not assume formatting or import-order rules that are not explicitly configured.
 
-### File Naming
+### State and Layout Changes
 
-- PascalCase for class-oriented files and major components
-- camelCase for platform/bootstrap files such as `chromeos_ime.ts` and `pime.ts`
-- `.test.ts` for tests
+- If a change affects composition lifecycle, update `README.STATES.md` to match `InputState.ts`.
+- Layout-specific key behavior belongs in `src/layout/`, not in `KeyHandler`.
+- Shared controller behavior belongs in `src/input_method/InputController.ts`.
+- If a new layout is added, register it in `LayoutManager` and add tests for both layout behavior and controller integration where needed.
 
 ## Common Tasks
 
 ### Modifying Input Behavior
 
-- Update `src/input_method/KeyHandler.ts` for key semantics.
-- Update `src/input_method/InputController.ts` for UI and commit flow changes.
-- Update `src/input_method/InputState.ts` for state model changes.
-- Update `src/input_method/InputUIElements.ts` if the UI payload changes.
-- Add or revise adjacent tests.
+- Update the relevant layout in `src/layout/`.
+- Update `src/input_method/InputState.ts` if the state model changes.
+- Update `src/input_method/InputController.ts` if commit/reset/UI behavior changes.
+- Update `src/input_method/InputUIElements.ts` if the serialized UI payload changes.
+- Revise or add `.test.ts` files alongside the changed modules.
+
+### Working with Wylie
+
+- `src/layout/WyleLayout.ts` owns Wylie editing behavior.
+- The tooltip is generated from `tibetan-ewts-converter`.
+- Wylie state keeps both the raw letters and the converted Tibetan preview.
+
+### Working with Stacking Layouts
+
+- `src/layout/StackingLayout.ts` contains the shared stacking algorithm.
+- Subclasses provide compose keys, space keys, and key maps for consonants, vowels, suffixes, and symbols.
+- Cursor keys can commit the current buffer and fall through to the host environment.
 
 ### Working with PIME
 
-- `src/pime.ts` handles PIME lifecycle and input events such as `init`, `close`, `onActivate`, `onDeactivate`, `filterKeyDown`, `filterKeyUp`, `onKeyDown`, `onKeyboardStatusChanged`, `onCompositionTerminated`, `onCommand`, and `onMenu`.
-- `src/pime_keys.ts` converts Windows virtual key codes into the internal `Key` model.
-- Settings are stored under `%APPDATA%\\PIME\\mctibetim\\config.json`.
+- `src/pime.ts` handles the PIME event lifecycle and dispatches translated keys into `InputController`.
+- `src/pime_keys.ts` converts Windows virtual key data into the internal key model.
+- `output/pime/README.md` describes the current manual deployment flow.
 
-### Updating Vocabulary Data
-
-1. Download the Excel archives from the ILRDF resources site.
-2. Place the extracted Excel files in `tools/`.
-3. Create a Python virtual environment in `tools/`.
-4. Install `tools/requirements.txt`.
-5. Run `python convert.py`.
-6. Replace or add the generated `src/data/TW_XX.ts` files.
-7. Update `src/data/index.ts` so `InputTableManager` includes the intended tables.
-
-## Known Documentation Drift
+## Known Documentation Drift To Avoid
 
 Older instructions may still be wrong about these points:
 
-- They may describe the project as Web-only or Web + Chrome OS only. Windows/PIME is active.
-- They may reference `.eslintrc.cjs`. The repo now uses `eslint.config.cjs`.
-- They may describe the data set incorrectly. The current repo includes `TW_00` and `TW_12`, excludes `TW_11`, and has 42 table modules.
-- They may omit generated directories such as `dist/`, `coverage/`, and `output/`.
-- They may claim `npm run ts-build` is broken. In this workspace, it is green as of March 18, 2026.
+- They may mention `src/engine/` or vocabulary tables in `src/data/`; those are not part of the current repository state.
+- They may describe a prefix-search candidate engine; the current implementation is layout-based.
+- They may omit `src/layout/` and the Wylie/stacking split in the state model.
+- They may reference `.eslintrc.*`; the repo uses `eslint.config.cjs`.
+- They may describe outdated test counts or validation status.
 
 ## Resources
 
 - Project repository: https://github.com/openvanilla/McTibetimWeb
 - PIME repository: https://github.com/EasyIME/PIME
-- ILRDF glossary resources: https://glossary.ilrdf.org.tw/resources
-- Klokah vocabulary resources: https://web.klokah.tw/vocabulary/
