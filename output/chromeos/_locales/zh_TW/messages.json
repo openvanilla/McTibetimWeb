@@ -3,19 +3,28 @@
     "message": "zh-TW"
   },
   "manifestName": {
-    "message": "小麥族語"
+    "message": "小麥藏文"
   },
   "manifestDesc": {
-    "message": "使用原住民族語言發展基金會的學習詞表製作的族語輸入法"
+    "message": "提供多種不同藏文輸入方式的輸入法"
   },
-  "imeUS": {
-    "message": "小麥族語 (美式鍵盤)"
+  "imeDzongkha": {
+    "message": "小麥藏文 (Dzongkha)"
   },
-  "imeDvorak": {
-    "message": "小麥族語 (Dvorak 鍵盤)"
+  "imeSambhotaKeymapOne": {
+    "message": "小麥藏文 (Sambhota Keymap One)"
   },
-  "imeColmak": {
-    "message": "小麥族語 (Colmak 鍵盤)"
+  "imeSambhotaKeymapTwo": {
+    "message": "小麥藏文 (Sambhota Keymap Two)"
+  },
+  "imeTccKeyboardOne": {
+    "message": "小麥藏文 (TCC Keyboard One)"
+  },
+  "imeTccKeyboardTwo": {
+    "message": "小麥藏文 (TCC Keyboard Two)"
+  },
+  "imeWylie": {
+    "message": "小麥藏文 (Wylie)"
   },
   "menuOptions": {
     "message": "選項"

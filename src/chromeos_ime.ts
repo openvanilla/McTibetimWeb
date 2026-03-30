@@ -6,17 +6,9 @@
  * The main entrance of the IME for ChromeOS.
  */
 
-import { InputTableManager } from './data';
 import { InputController } from './input_method';
 import { Key, KeyName } from './input_method/Key';
 
-/**
- * Represents the settings for the mctibetim IME on ChromeOS.
- */
-type ChromeMcTibetimSettings = {
-  selected_input_table_index: number;
-  hidden_table_indices: number[];
-};
 
 /**
  * The main class for the mctibetim IME on ChromeOS.
@@ -28,15 +20,6 @@ class ChromeMcTibetim {
   // The current input context.
   context: chrome.input.ime.InputContext | undefined = undefined;
 
-  // The default settings.
-  readonly defaultSettings: ChromeMcTibetimSettings = {
-    selected_input_table_index: 0,
-    hidden_table_indices: [],
-  };
-  settings: ChromeMcTibetimSettings = {
-    selected_input_table_index: 0,
-    hidden_table_indices: [],
-  };
   inputController: InputController;
 
   constructor() {
@@ -46,96 +29,24 @@ class ChromeMcTibetim {
   }
 
   /**
-   * Loads the settings from chrome.storage.sync.
-   */
-  loadSettings() {
-    chrome.storage.sync.get('settings', (value) => {
-      this.settings = value.settings as ChromeMcTibetimSettings;
-      if (this.settings === undefined) {
-        this.settings = this.defaultSettings;
-      }
-
-      const selected_input_table_index = this.settings.selected_input_table_index;
-      if (selected_input_table_index !== undefined) {
-        InputTableManager.getInstance().selectedIndexValue = selected_input_table_index;
-      }
-    });
-  }
-
-  /**
-   * Saves the settings to chrome.storage.sync.
-   */
-  saveSettings() {
-    chrome.storage.sync.set({ settings: this.settings });
-  }
-
-  /**
    * Updates the menu items.
    */
   updateMenu() {
     if (this.engineID === undefined) return;
     let menus: chrome.input.ime.MenuItem[] = [
       {
-        id: 'mctibetim-options',
-        label: chrome.i18n.getMessage('menuOptions'),
-        style: 'check' as const,
-      },
-      {
         id: 'mctibetim-help',
         label: chrome.i18n.getMessage('menuHelp'),
         style: 'check' as const,
       },
       {
-        id: 'mctibetim-separator-1',
-        style: 'separator' as const,
-        enabled: false,
+        id: 'mctibetim-homepage',
+        label: chrome.i18n.getMessage('homepage'),
+        style: 'check' as const,
       },
     ];
 
-    const selectedIndex = this.settings.selected_input_table_index || 0;
-    const hiddenTableIndices = this.settings.hidden_table_indices || [];
-    const inputTables = InputTableManager.getInstance().tableNames;
-    let selectedTableSet = false;
 
-    const inputTableMenus: chrome.input.ime.MenuItem[] = [];
-
-    for (let i = 0; i < inputTables.length; i++) {
-      if (hiddenTableIndices.includes(i)) {
-        continue;
-      }
-      const tableName = inputTables[i];
-      const checked = i === selectedIndex;
-      if (checked) {
-        selectedTableSet = true;
-      }
-      const item = {
-        id: `mctibetim-select-table-${i}`,
-        label: tableName,
-        style: 'radio' as const,
-        checked: checked,
-      };
-      inputTableMenus.push(item);
-    }
-    if (inputTableMenus.length === 0) {
-      const tableName = inputTables[0];
-      const item = {
-        id: `mctibetim-select-table-0`,
-        label: tableName,
-        style: 'check' as const,
-        checked: true,
-      };
-      inputTableMenus.push(item);
-      InputTableManager.getInstance().selectedIndexValue = 0;
-      this.settings.selected_input_table_index = 0;
-    } else if (!selectedTableSet) {
-      let item = inputTableMenus[0];
-      let id = item.id.split('-').pop();
-      item.checked = true;
-      InputTableManager.getInstance().selectedIndexValue = Number(id);
-      this.settings.selected_input_table_index = Number(id);
-    }
-
-    menus = menus.concat(inputTableMenus);
     chrome.input.ime.setMenuItems({ engineID: this.engineID, items: menus });
   }
 
@@ -228,6 +139,7 @@ class ChromeMcTibetim {
         const state = JSON.parse(stateString);
         const buffer = state.composingBuffer;
         const candidates = state.candidates;
+        const tooltip = state.tooltip;
 
         const segments = [];
         let text = '';
@@ -315,6 +227,20 @@ class ChromeMcTibetim {
             contextID: this.context.contextID,
             candidateID: selectedIndex,
           });
+        } else if (tooltip.length) {
+          chrome.input.ime.setCandidateWindowProperties({
+            engineID: this.engineID,
+            properties: {
+              auxiliaryText: tooltip,
+              auxiliaryTextVisible: true,
+              visible: true,
+              cursorVisible: false,
+              // Use "cursor" positioning for tooltips so that the candidate
+              // window appears near the text cursor..
+              windowPosition: "cursor",
+              pageSize: 1, // pageSize has to be at least 1 otherwise ChromeOS crashes.
+            },
+          });
         } else {
           chrome.input.ime.setCandidateWindowProperties({
             engineID: this.engineID,
@@ -333,8 +259,12 @@ class ChromeMcTibetim {
 const chromeMcTibetim = new ChromeMcTibetim();
 
 chrome.input?.ime.onActivate.addListener((engineID) => {
+  const keyboardLayout = engineID.split('.').pop();
+  if (keyboardLayout) {
+    chromeMcTibetim.inputController.selectLayoutById(keyboardLayout);
+  }
+
   chromeMcTibetim.engineID = engineID;
-  chromeMcTibetim.loadSettings();
   chromeMcTibetim.updateMenu();
 });
 
@@ -363,8 +293,6 @@ chrome.input?.ime.onFocus.addListener((context) => {
   chromeMcTibetim.context = context;
   if (chromeMcTibetim.deferredResetTimeout !== null) {
     clearTimeout(chromeMcTibetim.deferredResetTimeout);
-  } else {
-    chromeMcTibetim.loadSettings();
   }
 });
 
@@ -391,26 +319,16 @@ chrome.input?.ime.onKeyEvent.addListener((engineID, keyData) => {
 });
 
 chrome.input.ime.onCandidateClicked.addListener((engineID, candidateID, button) => {
-  chromeMcTibetim.inputController.selectCandidateAtIndex(candidateID);
+
 });
 
 chrome.input?.ime.onMenuItemActivated.addListener((engineID, name) => {
-  if (name.search('mctibetim-select-table-') === 0) {
-    const id = name.split('-').pop();
-    const tableIndex = Number(id);
-    InputTableManager.getInstance().selectedIndexValue = tableIndex;
-    chromeMcTibetim.settings.selected_input_table_index = tableIndex;
-    chromeMcTibetim.saveSettings();
-    chromeMcTibetim.updateMenu();
-    return;
-  }
-
   switch (name) {
-    case 'mctibetim-options':
-      chromeMcTibetim.tryOpen(chrome.runtime.getURL('options.html'));
-      break;
+    // case 'mctibetim-options':
+    //   chromeMcTibetim.tryOpen(chrome.runtime.getURL('options.html'));
+    //   break;
     case 'mctibetim-help':
-      chromeMcTibetim.tryOpen(chrome.runtime.getURL('help/index.html'));
+      chromeMcTibetim.tryOpen('https://github.com/openvanilla/McTibetimWeb/wiki');
       break;
     case 'mctibetim-homepage':
       chromeMcTibetim.tryOpen('https://openvanilla.org/');
@@ -421,29 +339,6 @@ chrome.input?.ime.onMenuItemActivated.addListener((engineID, name) => {
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   // console.log(request);
 
-  if (request.command === 'get_table_names_and_settings') {
-    const tableNames = InputTableManager.getInstance().tableNames;
-    const hiddenTableIndices = chromeMcTibetim.settings.hidden_table_indices;
-    sendResponse({ status: 'ok', tableNames, hiddenTableIndices });
-  }
-
-  if (request.command === 'set_table_hidden') {
-    const tableIndex: number = request.tableIndex;
-    const hidden: boolean = request.hidden;
-    let hiddenTableIndices = chromeMcTibetim.settings.hidden_table_indices;
-    if (hidden) {
-      if (!hiddenTableIndices.includes(tableIndex)) {
-        hiddenTableIndices.push(tableIndex);
-      }
-    } else {
-      hiddenTableIndices = hiddenTableIndices.filter((index) => index !== tableIndex);
-    }
-    // console.log(hiddenTableIndices);
-    chromeMcTibetim.settings.hidden_table_indices = hiddenTableIndices;
-    chromeMcTibetim.saveSettings();
-    chromeMcTibetim.updateMenu();
-    sendResponse({ status: 'ok' });
-  }
 });
 
 chrome.runtime.onConnect.addListener((port) => {
@@ -489,7 +384,7 @@ async function retryOnTabUpdate(
   }
 }
 
-chromeMcTibetim.loadSettings();
+
 keepAlive();
 
 /**
