@@ -16,6 +16,9 @@
     window.localStorage.setItem('selectedLayout', value);
     controller.selectLayoutById(value);
     controller.reset();
+    if (screenKeyboard) {
+      screenKeyboard.loadLayout();
+    }
   }
 
   let ui = (function () {
@@ -332,7 +335,7 @@
         '{shift}': '⇧ Shift',
         '{bksp}': '⌫',
         '{enter}': '↵',
-        '{space}': 'Space',
+        '{space}': '་',
         '{ctrl}': '⌃',
       };
       for (const [key, value] of names.entries()) {
@@ -373,7 +376,7 @@
   screenKeyboard.loadLayout();
 })();
 
-document.getElementById('loading').innerText = '載入完畢！';
+document.getElementById('loading').innerText = 'Complete!';
 setTimeout(function () {
   document.getElementById('loading').style.display = 'none';
 }, 2000);
