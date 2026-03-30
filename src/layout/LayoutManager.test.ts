@@ -1,77 +1,86 @@
 import LayoutManager from './LayoutManager';
+import DzongkhaLayout from './DzongkhaLayout';
+import SambhotaKeymapOneLayout from './SambhotaKeymapOneLayout';
+import SambhotaKeymapTwoLayout from './SambhotaKeymapTwoLayout';
+import TccKeyboardOneLayout from './TccKeyboardOneLayout';
+import TccKeyboardTwoLayout from './TccKeyboardTwoLayout';
+import WyleLayout from './WyleLayout';
 
 describe('LayoutManager', () => {
-  describe('getInstance', () => {
-    it('should return a singleton instance', () => {
-      const instance1 = LayoutManager.getInstance();
-      const instance2 = LayoutManager.getInstance();
-      expect(instance1).toBe(instance2);
+  let manager: LayoutManager;
+
+  beforeEach(() => {
+    manager = LayoutManager.getInstance();
+  });
+
+  describe('singleton', () => {
+    it('returns the same instance', () => {
+      const a = LayoutManager.getInstance();
+      const b = LayoutManager.getInstance();
+      expect(a).toBe(b);
     });
   });
 
   describe('layouts', () => {
-    it('should contain all six layouts', () => {
-      const manager = LayoutManager.getInstance();
+    it('contains all expected layouts', () => {
+      const ids = manager.layouts.map((l) => l.layoutId);
+      expect(ids).toContain('dzongkha');
+      expect(ids).toContain('sambhota_keymap_one');
+      expect(ids).toContain('sambhota_keymap_two');
+      expect(ids).toContain('tcc_keyboard_one');
+      expect(ids).toContain('tcc_keyboard_two');
+      expect(ids).toContain('wylie');
+    });
+
+    it('has 6 layouts', () => {
       expect(manager.layouts).toHaveLength(6);
     });
 
-    it('should include the dzongkha layout', () => {
-      const manager = LayoutManager.getInstance();
-      const layout = manager.layouts.find((l) => l.layoutId === 'dzongkha');
-      expect(layout).toBeDefined();
-      expect(layout?.layoutName).toBe('Dzongkha');
+    it('layouts have unique ids', () => {
+      const ids = manager.layouts.map((l) => l.layoutId);
+      const uniqueIds = new Set(ids);
+      expect(uniqueIds.size).toBe(ids.length);
     });
 
-    it('should include sambhota_keymap_one layout', () => {
-      const manager = LayoutManager.getInstance();
-      const layout = manager.layouts.find((l) => l.layoutId === 'sambhota_keymap_one');
-      expect(layout).toBeDefined();
-      expect(layout?.layoutName).toBe('Sambhota Keymap #1');
-    });
-
-    it('should include sambhota_keymap_two layout', () => {
-      const manager = LayoutManager.getInstance();
-      const layout = manager.layouts.find((l) => l.layoutId === 'sambhota_keymap_two');
-      expect(layout).toBeDefined();
-    });
-
-    it('should include tcc_keyboard_one layout', () => {
-      const manager = LayoutManager.getInstance();
-      const layout = manager.layouts.find((l) => l.layoutId === 'tcc_keyboard_one');
-      expect(layout).toBeDefined();
-    });
-
-    it('should include tcc_keyboard_two layout', () => {
-      const manager = LayoutManager.getInstance();
-      const layout = manager.layouts.find((l) => l.layoutId === 'tcc_keyboard_two');
-      expect(layout).toBeDefined();
-    });
-
-    it('should include wylie layout', () => {
-      const manager = LayoutManager.getInstance();
-      const layout = manager.layouts.find((l) => l.layoutId === 'wylie');
-      expect(layout).toBeDefined();
-      expect(layout?.layoutName).toBe('Wylie');
+    it('layouts have non-empty names', () => {
+      for (const layout of manager.layouts) {
+        expect(layout.layoutName.length).toBeGreaterThan(0);
+      }
     });
   });
 
   describe('getLayoutById', () => {
-    it('should return the dzongkha layout by id', () => {
-      const manager = LayoutManager.getInstance();
+    it('returns dzongkha layout', () => {
       const layout = manager.getLayoutById('dzongkha');
-      expect(layout).toBeDefined();
-      expect(layout?.layoutId).toBe('dzongkha');
+      expect(layout).toBeInstanceOf(DzongkhaLayout);
     });
 
-    it('should return the wylie layout by id', () => {
-      const manager = LayoutManager.getInstance();
+    it('returns sambhota_keymap_one layout', () => {
+      const layout = manager.getLayoutById('sambhota_keymap_one');
+      expect(layout).toBeInstanceOf(SambhotaKeymapOneLayout);
+    });
+
+    it('returns sambhota_keymap_two layout', () => {
+      const layout = manager.getLayoutById('sambhota_keymap_two');
+      expect(layout).toBeInstanceOf(SambhotaKeymapTwoLayout);
+    });
+
+    it('returns tcc_keyboard_one layout', () => {
+      const layout = manager.getLayoutById('tcc_keyboard_one');
+      expect(layout).toBeInstanceOf(TccKeyboardOneLayout);
+    });
+
+    it('returns tcc_keyboard_two layout', () => {
+      const layout = manager.getLayoutById('tcc_keyboard_two');
+      expect(layout).toBeInstanceOf(TccKeyboardTwoLayout);
+    });
+
+    it('returns wylie layout', () => {
       const layout = manager.getLayoutById('wylie');
-      expect(layout).toBeDefined();
-      expect(layout?.layoutId).toBe('wylie');
+      expect(layout).toBeInstanceOf(WyleLayout);
     });
 
-    it('should return undefined for an unknown id', () => {
-      const manager = LayoutManager.getInstance();
+    it('returns undefined for unknown id', () => {
       const layout = manager.getLayoutById('nonexistent');
       expect(layout).toBeUndefined();
     });

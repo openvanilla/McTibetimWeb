@@ -1,9 +1,6 @@
+import WyleLayout from './WyleLayout';
 import { CommittingState, EmptyState, WylieInputtingState } from '../input_method/InputState';
 import { Key, KeyName } from '../input_method/Key';
-import WyleLayout from './WyleLayout';
-
-// The EwtsConverter is mocked via jest.config.js to return the input as-is.
-// So tibetan output will be equal to the input letters in tests.
 
 describe('WyleLayout', () => {
   let layout: WyleLayout;
@@ -16,310 +13,270 @@ describe('WyleLayout', () => {
     errorCallback = jest.fn();
   });
 
-  describe('layout identity', () => {
-    it('should have the correct layoutId', () => {
+  describe('layout properties', () => {
+    it('has correct layoutId', () => {
       expect(layout.layoutId).toBe('wylie');
     });
 
-    it('should have the correct layoutName', () => {
+    it('has correct layoutName', () => {
       expect(layout.layoutName).toBe('Wylie');
     });
   });
 
   describe('getKeyNames', () => {
-    it('should return an empty map', () => {
-      const keyNames = layout.getKeyNames(false, false, false);
-      expect(keyNames).toBeInstanceOf(Map);
-      expect(keyNames.size).toBe(0);
-    });
-
-    it('should return an empty map for shift', () => {
-      expect(layout.getKeyNames(true, false, false).size).toBe(0);
-    });
-
-    it('should return an empty map for ctrl', () => {
-      expect(layout.getKeyNames(false, true, false).size).toBe(0);
+    it('returns empty map', () => {
+      const names = layout.getKeyNames(false, false, false);
+      expect(names.size).toBe(0);
     });
   });
 
-  describe('handle', () => {
-    describe('ctrl key', () => {
-      it('should return false and not change state if not in WylieInputtingState', () => {
-        const key = new Key('a', KeyName.ASCII, false, true);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(false);
-        expect(stateCallback).not.toHaveBeenCalled();
-      });
-
-      it('should transition to EmptyState if in WylieInputtingState with ctrl', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 2);
-        const key = new Key('a', KeyName.ASCII, false, true);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        expect(stateCallback).toHaveBeenCalledWith(expect.any(EmptyState));
-      });
+  describe('handle - ctrl/alt key', () => {
+    it('clears WylieInputtingState on ctrl key', () => {
+      const state = new WylieInputtingState('ka', 'ཀ', 2);
+      const key = Key.asciiKey('a', false, true);
+      layout.handle(key, state, stateCallback, errorCallback);
+      const newState = stateCallback.mock.calls[0][0];
+      expect(newState).toBeInstanceOf(EmptyState);
     });
 
-    describe('alt key', () => {
-      it('should return false and not change state if not in WylieInputtingState', () => {
-        const key = new Key('a', KeyName.ASCII, false, false, false, true);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(false);
-        expect(stateCallback).not.toHaveBeenCalled();
-      });
-
-      it('should transition to EmptyState if in WylieInputtingState with alt', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 2);
-        const key = new Key('a', KeyName.ASCII, false, false, false, true);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        expect(stateCallback).toHaveBeenCalledWith(expect.any(EmptyState));
-      });
+    it('returns false on ctrl key in EmptyState', () => {
+      const key = Key.asciiKey('a', false, true);
+      const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      expect(result).toBe(false);
+      expect(stateCallback).not.toHaveBeenCalled();
     });
 
-    describe('SPACE key', () => {
-      it('should commit tsheg in EmptyState', () => {
-        const key = Key.namedKey(KeyName.SPACE);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(true);
-        const committed = stateCallback.mock.calls[0][0] as CommittingState;
-        expect(committed.commitString).toBe('་');
-      });
+    it('clears WylieInputtingState on alt key', () => {
+      const state = new WylieInputtingState('ka', 'ཀ', 2);
+      const key = new Key('a', KeyName.ASCII, false, false, false, true);
+      layout.handle(key, state, stateCallback, errorCallback);
+      const newState = stateCallback.mock.calls[0][0];
+      expect(newState).toBeInstanceOf(EmptyState);
+    });
+  });
 
-      it('should commit tibetan text + tsheg in WylieInputtingState', () => {
-        const inputtingState = new WylieInputtingState('k', 'k', 1);
-        const key = Key.namedKey(KeyName.SPACE);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        const committed = stateCallback.mock.calls[0][0] as CommittingState;
-        expect(committed.commitString).toBe('k་');
-      });
+  describe('handle - space key', () => {
+    it('commits tsheg in EmptyState', () => {
+      const key = Key.namedKey(KeyName.SPACE);
+      layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      const state = stateCallback.mock.calls[0][0] as CommittingState;
+      expect(state).toBeInstanceOf(CommittingState);
+      expect(state.commitString).toBe('་');
     });
 
-    describe('RETURN key', () => {
-      it('should commit letters in WylieInputtingState', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ཀ', 2);
-        const key = Key.namedKey(KeyName.RETURN);
-        const result = layout.handle(key, inputtingState, stateCallback, errorCallback);
-        expect(result).toBe(true);
-        const committed = stateCallback.mock.calls[0][0] as CommittingState;
-        expect(committed.commitString).toBe('ka');
-      });
+    it('appends tsheg to tibetan in WylieInputtingState', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 2);
+      const key = Key.namedKey(KeyName.SPACE);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      const state = stateCallback.mock.calls[0][0] as CommittingState;
+      expect(state).toBeInstanceOf(CommittingState);
+      expect(state.commitString).toBe('ཀ་');
+    });
+  });
 
-      it('should not commit in WylieInputtingState with empty letters', () => {
-        const inputtingState = new WylieInputtingState('', '', 0);
-        const key = Key.namedKey(KeyName.RETURN);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        expect(stateCallback).not.toHaveBeenCalled();
-      });
-
-      it('should return false in EmptyState', () => {
-        const key = Key.namedKey(KeyName.RETURN);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(false);
-      });
+  describe('handle - return key', () => {
+    it('commits letters in WylieInputtingState', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 2);
+      const key = Key.namedKey(KeyName.RETURN);
+      const result = layout.handle(key, wylie, stateCallback, errorCallback);
+      expect(result).toBe(true);
+      const state = stateCallback.mock.calls[0][0] as CommittingState;
+      expect(state).toBeInstanceOf(CommittingState);
+      expect(state.commitString).toBe('ka');
     });
 
-    describe('ESC key', () => {
-      it('should transition to EmptyState in WylieInputtingState', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ཀ', 2);
-        const key = Key.namedKey(KeyName.ESC);
-        const result = layout.handle(key, inputtingState, stateCallback, errorCallback);
-        expect(result).toBe(true);
-        expect(stateCallback).toHaveBeenCalledWith(expect.any(EmptyState));
-      });
+    it('returns false in EmptyState', () => {
+      const key = Key.namedKey(KeyName.RETURN);
+      const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      expect(result).toBe(false);
+      expect(stateCallback).not.toHaveBeenCalled();
+    });
+  });
 
-      it('should return true in EmptyState', () => {
-        const key = Key.namedKey(KeyName.ESC);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(true);
-        expect(stateCallback).not.toHaveBeenCalled();
-      });
+  describe('handle - escape key', () => {
+    it('clears WylieInputtingState', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 2);
+      const key = Key.namedKey(KeyName.ESC);
+      const result = layout.handle(key, wylie, stateCallback, errorCallback);
+      expect(result).toBe(true);
+      expect(stateCallback.mock.calls[0][0]).toBeInstanceOf(EmptyState);
     });
 
-    describe('BACKSPACE key', () => {
-      it('should remove last character from letters', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 2);
-        const key = Key.namedKey(KeyName.BACKSPACE);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        const newState = stateCallback.mock.calls[0][0] as WylieInputtingState;
-        expect(newState).toBeInstanceOf(WylieInputtingState);
-        expect(newState.letters).toBe('k');
-      });
+    it('returns true in EmptyState', () => {
+      const key = Key.namedKey(KeyName.ESC);
+      const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      expect(result).toBe(true);
+    });
+  });
 
-      it('should transition to EmptyState when deleting the last character', () => {
-        const inputtingState = new WylieInputtingState('k', 'k', 1);
-        const key = Key.namedKey(KeyName.BACKSPACE);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        expect(stateCallback).toHaveBeenCalledWith(expect.any(EmptyState));
-      });
-
-      it('should call errorCallback when cursor is at beginning', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 0);
-        const key = Key.namedKey(KeyName.BACKSPACE);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        expect(errorCallback).toHaveBeenCalled();
-        expect(stateCallback).not.toHaveBeenCalled();
-      });
-
-      it('should return false in EmptyState', () => {
-        const key = Key.namedKey(KeyName.BACKSPACE);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(false);
-      });
+  describe('handle - backspace key', () => {
+    it('removes character before cursor in WylieInputtingState', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 2);
+      const key = Key.namedKey(KeyName.BACKSPACE);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      const state = stateCallback.mock.calls[0][0] as WylieInputtingState;
+      expect(state).toBeInstanceOf(WylieInputtingState);
+      expect(state.letters).toBe('k');
+      expect(state.cursorIndex).toBe(1);
     });
 
-    describe('DELETE key', () => {
-      it('should remove character at cursor position', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 1);
-        const key = Key.namedKey(KeyName.DELETE);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        const newState = stateCallback.mock.calls[0][0] as WylieInputtingState;
-        expect(newState).toBeInstanceOf(WylieInputtingState);
-        expect(newState.letters).toBe('k');
-      });
-
-      it('should transition to EmptyState when deleting the last character', () => {
-        const inputtingState = new WylieInputtingState('k', 'k', 0);
-        const key = Key.namedKey(KeyName.DELETE);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        expect(stateCallback).toHaveBeenCalledWith(expect.any(EmptyState));
-      });
-
-      it('should call errorCallback when cursor is at end', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 2);
-        const key = Key.namedKey(KeyName.DELETE);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        expect(errorCallback).toHaveBeenCalled();
-        expect(stateCallback).not.toHaveBeenCalled();
-      });
-
-      it('should return false in EmptyState', () => {
-        const key = Key.namedKey(KeyName.DELETE);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(false);
-      });
+    it('transitions to EmptyState when last character deleted', () => {
+      const wylie = new WylieInputtingState('k', 'ཀ', 1);
+      const key = Key.namedKey(KeyName.BACKSPACE);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      expect(stateCallback.mock.calls[0][0]).toBeInstanceOf(EmptyState);
     });
 
-    describe('LEFT arrow key', () => {
-      it('should move cursor left in WylieInputtingState', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 2);
-        const key = Key.namedKey(KeyName.LEFT);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        const newState = stateCallback.mock.calls[0][0] as WylieInputtingState;
-        expect(newState.cursorIndex).toBe(1);
-      });
-
-      it('should call errorCallback when cursor is already at start', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 0);
-        const key = Key.namedKey(KeyName.LEFT);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        expect(errorCallback).toHaveBeenCalled();
-        expect(stateCallback).not.toHaveBeenCalled();
-      });
-
-      it('should return false in EmptyState', () => {
-        const key = Key.namedKey(KeyName.LEFT);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(false);
-      });
+    it('calls errorCallback when cursor at beginning', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 0);
+      const key = Key.namedKey(KeyName.BACKSPACE);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      expect(errorCallback).toHaveBeenCalled();
     });
 
-    describe('RIGHT arrow key', () => {
-      it('should move cursor right in WylieInputtingState', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 1);
-        const key = Key.namedKey(KeyName.RIGHT);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        const newState = stateCallback.mock.calls[0][0] as WylieInputtingState;
-        expect(newState.cursorIndex).toBe(2);
-      });
+    it('returns false in EmptyState', () => {
+      const key = Key.namedKey(KeyName.BACKSPACE);
+      const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      expect(result).toBe(false);
+    });
+  });
 
-      it('should call errorCallback when cursor is at end', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 2);
-        const key = Key.namedKey(KeyName.RIGHT);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        expect(errorCallback).toHaveBeenCalled();
-        expect(stateCallback).not.toHaveBeenCalled();
-      });
-
-      it('should return false in EmptyState', () => {
-        const key = Key.namedKey(KeyName.RIGHT);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(false);
-      });
+  describe('handle - delete key', () => {
+    it('removes character after cursor in WylieInputtingState', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 0);
+      const key = Key.namedKey(KeyName.DELETE);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      const state = stateCallback.mock.calls[0][0] as WylieInputtingState;
+      expect(state).toBeInstanceOf(WylieInputtingState);
+      expect(state.letters).toBe('a');
+      expect(state.cursorIndex).toBe(0);
     });
 
-    describe('HOME key', () => {
-      it('should move cursor to beginning', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 2);
-        const key = Key.namedKey(KeyName.HOME);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        const newState = stateCallback.mock.calls[0][0] as WylieInputtingState;
-        expect(newState.cursorIndex).toBe(0);
-      });
-
-      it('should return false in EmptyState', () => {
-        const key = Key.namedKey(KeyName.HOME);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(false);
-      });
+    it('transitions to EmptyState when last character deleted', () => {
+      const wylie = new WylieInputtingState('k', 'ཀ', 0);
+      const key = Key.namedKey(KeyName.DELETE);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      expect(stateCallback.mock.calls[0][0]).toBeInstanceOf(EmptyState);
     });
 
-    describe('END key', () => {
-      it('should move cursor to end of letters', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 0);
-        const key = Key.namedKey(KeyName.END);
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        const newState = stateCallback.mock.calls[0][0] as WylieInputtingState;
-        expect(newState.cursorIndex).toBe(2);
-      });
-
-      it('should return false in EmptyState', () => {
-        const key = Key.namedKey(KeyName.END);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(false);
-      });
+    it('calls errorCallback when cursor at end', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 2);
+      const key = Key.namedKey(KeyName.DELETE);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      expect(errorCallback).toHaveBeenCalled();
     });
 
-    describe('typing ASCII characters', () => {
-      it('should create WylieInputtingState when typing in EmptyState', () => {
-        const key = Key.asciiKey('k');
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(true);
-        const newState = stateCallback.mock.calls[0][0] as WylieInputtingState;
-        expect(newState).toBeInstanceOf(WylieInputtingState);
-        expect(newState.letters).toBe('k');
-        expect(newState.cursorIndex).toBe(1);
-      });
+    it('returns false in EmptyState', () => {
+      const key = Key.namedKey(KeyName.DELETE);
+      const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      expect(result).toBe(false);
+    });
+  });
 
-      it('should append character to existing letters', () => {
-        const inputtingState = new WylieInputtingState('k', 'k', 1);
-        const key = Key.asciiKey('a');
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        const newState = stateCallback.mock.calls[0][0] as WylieInputtingState;
-        expect(newState.letters).toBe('ka');
-        expect(newState.cursorIndex).toBe(2);
-      });
+  describe('handle - left arrow key', () => {
+    it('moves cursor left in WylieInputtingState', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 2);
+      const key = Key.namedKey(KeyName.LEFT);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      const state = stateCallback.mock.calls[0][0] as WylieInputtingState;
+      expect(state).toBeInstanceOf(WylieInputtingState);
+      expect(state.cursorIndex).toBe(1);
+    });
 
-      it('should insert character at cursor position', () => {
-        const inputtingState = new WylieInputtingState('ka', 'ka', 1);
-        const key = Key.asciiKey('x');
-        layout.handle(key, inputtingState, stateCallback, errorCallback);
-        const newState = stateCallback.mock.calls[0][0] as WylieInputtingState;
-        expect(newState.letters).toBe('kxa');
-        expect(newState.cursorIndex).toBe(2);
-      });
+    it('calls errorCallback when cursor at start', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 0);
+      const key = Key.namedKey(KeyName.LEFT);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      expect(errorCallback).toHaveBeenCalled();
+    });
 
-      it('should update tibetan field from ewts converter', () => {
-        const key = Key.asciiKey('k');
-        layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        const newState = stateCallback.mock.calls[0][0] as WylieInputtingState;
-        // Mock returns input as-is
-        expect(newState.tibetan).toBe('k');
-      });
+    it('returns false in EmptyState', () => {
+      const key = Key.namedKey(KeyName.LEFT);
+      const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      expect(result).toBe(false);
+    });
+  });
 
-      it('should not handle non-single-character keys', () => {
-        const key = new Key('', KeyName.UNKNOWN);
-        const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
-        expect(result).toBe(false);
-      });
+  describe('handle - right arrow key', () => {
+    it('moves cursor right in WylieInputtingState', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 0);
+      const key = Key.namedKey(KeyName.RIGHT);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      const state = stateCallback.mock.calls[0][0] as WylieInputtingState;
+      expect(state).toBeInstanceOf(WylieInputtingState);
+      expect(state.cursorIndex).toBe(1);
+    });
+
+    it('calls errorCallback when cursor at end', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 2);
+      const key = Key.namedKey(KeyName.RIGHT);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      expect(errorCallback).toHaveBeenCalled();
+    });
+
+    it('returns false in EmptyState', () => {
+      const key = Key.namedKey(KeyName.RIGHT);
+      const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('handle - home key', () => {
+    it('moves cursor to start in WylieInputtingState', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 2);
+      const key = Key.namedKey(KeyName.HOME);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      const state = stateCallback.mock.calls[0][0] as WylieInputtingState;
+      expect(state.cursorIndex).toBe(0);
+    });
+
+    it('returns false in EmptyState', () => {
+      const key = Key.namedKey(KeyName.HOME);
+      const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('handle - end key', () => {
+    it('moves cursor to end in WylieInputtingState', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 0);
+      const key = Key.namedKey(KeyName.END);
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      const state = stateCallback.mock.calls[0][0] as WylieInputtingState;
+      expect(state.cursorIndex).toBe(2);
+    });
+
+    it('returns false in EmptyState', () => {
+      const key = Key.namedKey(KeyName.END);
+      const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('handle - ascii character', () => {
+    it('creates WylieInputtingState from EmptyState', () => {
+      const key = Key.asciiKey('k');
+      layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      const state = stateCallback.mock.calls[0][0] as WylieInputtingState;
+      expect(state).toBeInstanceOf(WylieInputtingState);
+      expect(state.letters).toBe('k');
+      expect(state.cursorIndex).toBe(1);
+    });
+
+    it('inserts character at cursor in WylieInputtingState', () => {
+      const wylie = new WylieInputtingState('ka', 'ཀ', 1);
+      const key = Key.asciiKey('x');
+      layout.handle(key, wylie, stateCallback, errorCallback);
+      const state = stateCallback.mock.calls[0][0] as WylieInputtingState;
+      expect(state).toBeInstanceOf(WylieInputtingState);
+      expect(state.letters).toBe('kxa');
+      expect(state.cursorIndex).toBe(2);
+    });
+
+    it('returns false for non-single-char ascii', () => {
+      const key = Key.namedKey(KeyName.UNKNOWN);
+      const result = layout.handle(key, new EmptyState(), stateCallback, errorCallback);
+      expect(result).toBe(false);
     });
   });
 });

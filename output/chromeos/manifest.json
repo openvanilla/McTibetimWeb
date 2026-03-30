@@ -16,10 +16,55 @@
   },
   "input_components": [
     {
-      "name": "__MSG_imeUS__",
+      "name": "__MSG_imeDzongkha__",
       "type": "ime",
-      "id": "org.openvanilla.mctibetim.us",
-      "language": "bo-CN",
+      "id": "org.openvanilla.mctibetim.dzongkha",
+      "language": "dz",
+      "layouts": [
+        "bt"
+      ]
+    },
+    {
+      "name": "__MSG_imeSambhotaKeymapOne__",
+      "type": "ime",
+      "id": "org.openvanilla.mctibetim.sambhota_keymap_one",
+      "language": "bo",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_imeSambhotaKeymapTwo__",
+      "type": "ime",
+      "id": "org.openvanilla.mctibetim.sambhota_keymap_two",
+      "language": "bo",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_imeTccKeyboardOne__",
+      "type": "ime",
+      "id": "org.openvanilla.mctibetim.tcc_keyboard_one",
+      "language": "bo",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_imeTccKeyboardTwo__",
+      "type": "ime",
+      "id": "org.openvanilla.mctibetim.tcc_keyboard_two",
+      "language": "bo",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_imeWylie__",
+      "type": "ime",
+      "id": "org.openvanilla.mctibetim.wylie",
+      "language": "bo",
       "layouts": [
         "us"
       ]

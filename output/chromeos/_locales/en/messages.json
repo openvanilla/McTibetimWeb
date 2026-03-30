@@ -6,16 +6,25 @@
     "message": "McTibetim"
   },
   "manifestDesc": {
-    "message": "Input method based on the vocabulary list of the Indigenous Languages Development Foundation"
+    "message": "Provide various Tibetan input methods"
   },
-  "imeUS": {
-    "message": "McTibetim (US Keyboard)"
+  "imeDzongkha": {
+    "message": "McTibetim (Dzongkha)"
   },
-  "imeDvorak": {
-    "message": "McTibetim (Dvorak Keyboard)"
+  "imeSambhotaKeymapOne": {
+    "message": "McTibetim (Sambhota Keymap One)"
   },
-  "imeColmak": {
-    "message": "McTibetim (Colmak Keyboard)"
+  "imeSambhotaKeymapTwo": {
+    "message": "McTibetim (Sambhota Keymap Two)"
+  },
+  "imeTccKeyboardOne": {
+    "message": "McTibetim (TCC Keyboard One)"
+  },
+  "imeTccKeyboardTwo": {
+    "message": "McTibetim (TCC Keyboard Two)"
+  },
+  "imeWylie": {
+    "message": "McTibetim (Wylie)"
   },
   "menuOptions": {
     "message": "Options"

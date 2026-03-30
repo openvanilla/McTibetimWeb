@@ -60,7 +60,7 @@ export default abstract class StackingLayout extends Layout {
     0x0f62, 0x0f63, 0x0f64, 0x0f66, 0x0f67, 0x0f68, 0x0f4a, 0x0f4b, 0x0f4c, 0x0f4e, 0x0f65,
   ];
 
-  static MaxStackingConsonants = 4;
+  static MaxStackingConsonants = 10;
   static KbTransform = 34;
   static Htransform = 28;
   static HtransformKey = [2, 10, 14, 18, 32];

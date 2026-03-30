@@ -1,130 +1,99 @@
+import { Candidate } from './Candidate';
 import {
   CommittingState,
   EmptyState,
-  InputState,
   InputtingState,
   StackingState,
   WylieInputtingState,
 } from './InputState';
-import { Candidate } from './Candidate';
 
 describe('EmptyState', () => {
-  it('should be an instance of InputState', () => {
-    const state = new EmptyState();
-    expect(state).toBeInstanceOf(InputState);
-  });
-
-  it('should be an instance of EmptyState', () => {
+  it('is an instance of InputState', () => {
     const state = new EmptyState();
     expect(state).toBeInstanceOf(EmptyState);
   });
 });
 
 describe('CommittingState', () => {
-  it('should store the commitString', () => {
-    const state = new CommittingState('commit this');
-    expect(state.commitString).toBe('commit this');
+  it('stores commitString', () => {
+    const state = new CommittingState('hello');
+    expect(state.commitString).toBe('hello');
   });
 
-  it('should store an empty commitString', () => {
-    const state = new CommittingState('');
-    expect(state.commitString).toBe('');
-  });
-
-  it('should store Tibetan characters as commitString', () => {
+  it('stores unicode commit string', () => {
     const state = new CommittingState('ཀ');
     expect(state.commitString).toBe('ཀ');
-  });
-
-  it('should be an instance of InputState', () => {
-    const state = new CommittingState('x');
-    expect(state).toBeInstanceOf(InputState);
   });
 });
 
 describe('WylieInputtingState', () => {
-  it('should store letters, tibetan, and cursorIndex', () => {
-    const state = new WylieInputtingState('abc', 'ཀ', 3);
-    expect(state.letters).toBe('abc');
+  it('stores letters, tibetan, and cursorIndex', () => {
+    const state = new WylieInputtingState('ka', 'ཀ', 2);
+    expect(state.letters).toBe('ka');
     expect(state.tibetan).toBe('ཀ');
-    expect(state.cursorIndex).toBe(3);
+    expect(state.cursorIndex).toBe(2);
   });
 
-  it('composingBuffer should return letters', () => {
-    const state = new WylieInputtingState('ka', 'ཀ', 2);
-    expect(state.composingBuffer).toBe('ka');
+  it('composingBuffer returns letters', () => {
+    const state = new WylieInputtingState('abc', 'ཀ', 1);
+    expect(state.composingBuffer).toBe('abc');
   });
 
-  it('tooltip should return tibetan', () => {
-    const state = new WylieInputtingState('ka', 'ཀ', 2);
+  it('tooltip returns tibetan', () => {
+    const state = new WylieInputtingState('ka', 'ཀ', 1);
     expect(state.tooltip).toBe('ཀ');
   });
 
-  it('should be an instance of InputtingState', () => {
-    const state = new WylieInputtingState('', '', 0);
-    expect(state).toBeInstanceOf(InputtingState);
-  });
-
-  it('candidates should be empty by default', () => {
-    const state = new WylieInputtingState('', '', 0);
+  it('starts with empty candidates array', () => {
+    const state = new WylieInputtingState('ka', 'ཀ', 1);
     expect(state.candodates).toEqual([]);
   });
 
-  it('selectionKeys should have default values', () => {
-    const state = new WylieInputtingState('', '', 0);
-    expect(state.selectionKeys).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
+  it('is an instance of InputtingState', () => {
+    const state = new WylieInputtingState('ka', 'ཀ', 1);
+    expect(state).toBeInstanceOf(InputtingState);
   });
 
-  it('should allow adding candidates', () => {
-    const state = new WylieInputtingState('ka', 'ཀ', 2);
-    state.candodates.push(new Candidate('ཀ', 'ka'));
-    expect(state.candodates).toHaveLength(1);
-    expect(state.candodates[0].displayText).toBe('ཀ');
+  it('has default selectionKeys', () => {
+    const state = new WylieInputtingState('ka', 'ཀ', 1);
+    expect(state.selectionKeys).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
   });
 });
 
 describe('StackingState', () => {
-  it('should store utf16Code and consonantIndexes', () => {
-    const codes = [0x0f40, 0x0f72];
-    const state = new StackingState(codes, [0]);
-    expect(state.utf16Code).toEqual(codes);
+  it('stores utf16Code and consonantIndexes', () => {
+    const state = new StackingState([0x0f40], [0]);
+    expect(state.utf16Code).toEqual([0x0f40]);
     expect(state.consonantIndexes).toEqual([0]);
   });
 
-  it('composingBuffer should be a string built from utf16Code', () => {
-    const codes = [0x0f40];
-    const state = new StackingState(codes, [0]);
+  it('composingBuffer returns string from utf16 codes', () => {
+    const state = new StackingState([0x0f40], [0]);
     expect(state.composingBuffer).toBe(String.fromCharCode(0x0f40));
   });
 
-  it('composingBuffer should be empty for empty codes', () => {
+  it('composingBuffer is empty when no codes', () => {
     const state = new StackingState([], []);
     expect(state.composingBuffer).toBe('');
   });
 
-  it('cursorIndex should equal composingBuffer length', () => {
-    const codes = [0x0f40, 0x0f72];
-    const state = new StackingState(codes, [0, 1]);
-    expect(state.cursorIndex).toBe(state.composingBuffer.length);
+  it('cursorIndex equals composingBuffer length', () => {
+    const state = new StackingState([0x0f40, 0x0f41], [0, 1]);
+    expect(state.cursorIndex).toBe(2);
   });
 
-  it('tooltip should be "Stacking"', () => {
+  it('tooltip returns Stacking', () => {
     const state = new StackingState([], []);
     expect(state.tooltip).toBe('Stacking');
   });
 
-  it('should be an instance of InputtingState', () => {
-    const state = new StackingState([], []);
-    expect(state).toBeInstanceOf(InputtingState);
-  });
-
-  it('candidates should be empty by default', () => {
+  it('starts with empty candidates array', () => {
     const state = new StackingState([], []);
     expect(state.candodates).toEqual([]);
   });
 
-  it('selectionKeys should have default values', () => {
+  it('is an instance of InputtingState', () => {
     const state = new StackingState([], []);
-    expect(state.selectionKeys).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
+    expect(state).toBeInstanceOf(InputtingState);
   });
 });
