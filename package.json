@@ -60,6 +60,7 @@
     "assert": false
   },
   "dependencies": {
-    "@types/chrome": "^0.1.38"
+    "@types/chrome": "^0.1.38",
+    "tibetan-ewts-converter": "^2.0.0"
   }
 }

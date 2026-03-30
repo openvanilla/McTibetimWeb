@@ -490,3 +490,13 @@ textarea#text_area:focus ~ * #edit_area,
   background: var(--accent) !important;
   color: var(--accent-contrast) !important;
 }
+
+#tooltip {
+  float: left;
+  padding: 0.35rem 0.6rem;
+  background: var(--surface-strong);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  visibility: hidden;
+}

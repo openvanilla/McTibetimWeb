@@ -9,6 +9,7 @@
     document.getElementById('composing_buffer').innerHTML = renderText;
     document.getElementById('candidates').innerHTML = '';
     composingBuffer = '';
+    document.getElementById('tooltip').style.visibility = 'hidden';
   }
 
   function onChangeTable(value) {
@@ -105,6 +106,15 @@
       document.getElementById('candidates').style.visibility = candidates.length
         ? 'visible'
         : 'hidden';
+
+      const tooltip = state.tooltip;
+      if (tooltip && tooltip.length) {
+        const tooltipDiv = document.getElementById('tooltip');
+        tooltipDiv.textContent = tooltip;
+        tooltipDiv.style.visibility = 'visible';
+      } else {
+        document.getElementById('tooltip').style.visibility = 'hidden';
+      }
 
       document.getElementById('function').style.visibility = 'visible';
       const textArea = document.getElementById('text_area');
@@ -218,7 +228,7 @@
   });
 
   textarea.addEventListener('keydown', (event) => {
-    console.log(event);
+    // console.log(event);
 
     if (isComposing || event.isComposing || event.keyCode === 229) {
       return;

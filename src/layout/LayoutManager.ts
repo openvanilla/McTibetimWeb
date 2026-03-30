@@ -4,6 +4,7 @@ import SambhotaKeymapOneLayout from './SambhotaKeymapOneLayout';
 import SambhotaKeymapTwoLayout from './SambhotaKeymapTwoLayout';
 import TccKeyboardOneLayout from './TccKeyboardOneLayout';
 import TccKeyboardTwoLayout from './TccKeyboardTwoLayout';
+import WyleLayout from './WyleLayout';
 
 export default class LayoutManager {
   private static instance: LayoutManager;
@@ -23,6 +24,7 @@ export default class LayoutManager {
     new SambhotaKeymapTwoLayout(),
     new TccKeyboardOneLayout(),
     new TccKeyboardTwoLayout(),
+    new WyleLayout(),
   ];
 
   getLayoutById(layoutId: string): Layout | undefined {

@@ -1,4 +1,28 @@
+import { Candidate } from './Candidate';
 import { InputtingState } from './InputState';
+
+class CandidateWrapper {
+  constructor(readonly keyCap: string, readonly candidate: Candidate, readonly selected: boolean) {
+    this.keyCap = keyCap;
+    this.candidate = candidate;
+    this.selected = selected;
+  }
+
+  /** Returns the reading of the candidate. */
+  get reading(): string {
+    return this.candidate.displayText;
+  }
+
+  /** Returns the value of the candidate. */
+  get value(): string {
+    return this.candidate.displayText;
+  }
+
+  /** Returns the description of the candidate. */
+  get description(): string {
+    return this.candidate.description;
+  }
+}
 
 enum ComposingBufferTextStyle {
   Normal = 'normal',
@@ -16,7 +40,12 @@ class ComposingBufferText {
 }
 
 class InputUIState {
-  constructor(readonly composingBuffer: ComposingBufferText[], readonly cursorIndex: number) {}
+  constructor(
+    readonly composingBuffer: ComposingBufferText[],
+    readonly cursorIndex: number,
+    readonly candidates: CandidateWrapper[],
+    readonly tooltip?: string,
+  ) {}
 }
 
 /**
@@ -40,14 +69,24 @@ export class InputUIStateBuilder {
     return JSON.stringify(this.build());
   }
 
-  /**
-   * Builds the structured UI payload.
-   * @returns The UI payload before JSON serialization.
-   */
   build(): InputUIState {
     const composingBufferTexts: ComposingBufferText[] = [];
     const text = this.state.composingBuffer;
     composingBufferTexts.push(new ComposingBufferText(text));
-    return new InputUIState(composingBufferTexts, this.state.cursorIndex);
+
+    const selectionKeys = this.state.selectionKeys;
+    const candidateWrappers: CandidateWrapper[] = [];
+    for (let i = 0; i < this.state.candodates.length; i++) {
+      let selectionKey = selectionKeys[i];
+      const candidate = this.state.candodates[i];
+      const selected = false;
+      candidateWrappers.push(new CandidateWrapper(selectionKey, candidate, selected));
+    }
+    return new InputUIState(
+      composingBufferTexts,
+      this.state.cursorIndex,
+      candidateWrappers, // candidates
+      this.state.tooltip,
+    );
   }
 }

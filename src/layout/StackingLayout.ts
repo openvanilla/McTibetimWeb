@@ -194,7 +194,7 @@ export default abstract class StackingLayout extends Layout {
 
     if (key.name === KeyName.SPACE) {
       let codes: number[] = [];
-      if (state instanceof InputtingState) {
+      if (state instanceof StackingState) {
         codes = state.utf16Code;
       }
       codes.push(0x0f0b);
@@ -278,9 +278,7 @@ export default abstract class StackingLayout extends Layout {
       let codes: number[] = [];
       if (state instanceof StackingState) {
         const codesFromState = state.utf16Code;
-        if (state.consonantIndexes.length > 2) {
-          codes = codesFromState;
-        }
+        codes = codesFromState;
       }
 
       codes.push(code);
