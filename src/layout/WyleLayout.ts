@@ -1,4 +1,3 @@
-import { emit } from 'node:cluster';
 import { Key } from '../input_method';
 import {
   CommittingState,
@@ -19,30 +18,6 @@ function convertWylieToTibetan(wylie: string): string {
 }
 
 export default class WyleLayout extends Layout {
-  //   static SYMBOLS = new Map<string, string>([
-  //     ['1', '༡'],
-  //     ['2', '༢'],
-  //     ['3', '༣'],
-  //     ['4', '༤'],
-  //     ['5', '༥'],
-  //     ['6', '༦'],
-  //     ['7', '༧'],
-  //     ['8', '༨'],
-  //     ['9', '༩'],
-  //     ['0', '༠'],
-  //     ['!', '༈'],
-  //     ['@', '༄'],
-  //     ['#', '༅'],
-  //     ['$', '༆'],
-  //     ['%', '༇'],
-  //     ['^', '༹'],
-  //     ['&', '྅'],
-  //     ['*', '༌'],
-  //     ['(', '༼'],
-  //     [')', '༽'],
-  //     ['།', '།'],
-  //   ]);
-
   readonly layoutId = 'wylie';
   readonly layoutName = 'Wylie';
 
