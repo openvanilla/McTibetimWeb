@@ -81,7 +81,7 @@ jobs:
 
       - run: npx typedoc --entryPointStrategy expand ./src --exclude "**/*.test.ts"
 
-      - run: mv docs/* output/example/
+      - run: mv docs output/example/.
       - run: ls -la output/example | head
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
