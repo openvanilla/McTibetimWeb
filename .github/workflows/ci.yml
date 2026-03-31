@@ -58,25 +58,37 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  build_publish:
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    strategy:
-      matrix:
-        node-version: [24.x]
-    steps:
-      - uses: actions/checkout@v6
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: npm install
-      - run: npm run build
-      - run: npx typedoc --entryPointStrategy expand ./src --exclude "**/*.test.ts"
-      - run: mv docs output/example/.
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: output/example
+build_publish:
+  runs-on: ubuntu-latest
+  if: github.ref == 'refs/heads/main'
+
+  permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+  environment:
+    name: github-pages
+    url: ${{ steps.deployment.outputs.page_url }}
+
+  steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+
+    - run: npm ci
+    - run: npm run build
+
+    - run: npx typedoc --entryPointStrategy expand ./src --exclude "**/*.test.ts"
+
+    - run: mv docs/* output/example/
+    - run: ls -la output/example | head
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: output/example
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
