@@ -104,6 +104,14 @@ export class KeyMapping {
     ['Slash', '/'],
   ]);
 
+  /**
+   * Translates simple virtual keyboard events into internal Key instances.
+   * @param button The character or key name pressed.
+   * @param isShift Whether Shift is pressed.
+   * @param isCtrl Whether Control is pressed.
+   * @param isAlt Whether Alt is pressed.
+   * @returns The generated Key instance.
+   */
   static keyFromSimpleKeyboardEvent(
     button: string,
     isShift: boolean,

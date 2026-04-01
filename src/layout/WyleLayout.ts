@@ -16,6 +16,17 @@ function convertWylieToTibetan(wylie: string): string {
   return result;
 }
 
+/**
+ * Implements the Extended Wylie Transliteration Scheme (EWTS) keyboard layout.
+ *
+ * Based on the Wylie transliteration format invented by Turrell V. Wylie in 1959.
+ * This layout is extremely popular among Western scholars, translators, and
+ * non-native learners. Instead of memorizing a new physical layout, users type
+ * the Romanized spelling of Tibetan words on a standard English QWERTY keyboard,
+ * which the software automatically converts into Tibetan Unicode on the fly.
+ * 
+ * Uses the `tibetan-ewts-converter` to convert ASCII input to Tibetan Unicode.
+ */
 export default class WyleLayout extends Layout {
   readonly layoutId = 'wylie';
   readonly layoutName = 'Wylie';
