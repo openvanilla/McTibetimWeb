@@ -1,7 +1,7 @@
 import { CommittingState, InputState } from '../input_method/InputState';
-import Layout from './Layout';
 import { Key, KeyName } from '../input_method/Key';
 import { KeyMapping } from '../input_method/KeyMapping';
+import Layout from './Layout';
 
 /**
  * Implements the Dzongkha keyboard layout.

@@ -1,13 +1,14 @@
-import { Key, KeyName } from '../input_method/Key';
+// @ts-ignore
+import { EwtsConverter } from 'tibetan-ewts-converter/EwtsConverter';
+
 import {
   CommittingState,
   EmptyState,
   InputState,
   WylieInputtingState,
 } from '../input_method/InputState';
+import { Key, KeyName } from '../input_method/Key';
 import Layout from './Layout';
-// @ts-ignore
-import { EwtsConverter } from 'tibetan-ewts-converter/EwtsConverter';
 const ewts = new EwtsConverter();
 
 function convertWylieToTibetan(wylie: string): string {

@@ -1,5 +1,5 @@
-import LayoutManager from '../layout/LayoutManager';
 import Layout from '../layout/Layout';
+import LayoutManager from '../layout/LayoutManager';
 import { InputState } from './InputState';
 import { Key } from './Key';
 
